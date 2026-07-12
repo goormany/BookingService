@@ -5,6 +5,6 @@ from src.db.database import Base
 
 class Rooms(Base):
     name: Mapped[str] = mapped_column(String(64), index=True)
-    description: Mapped[str]
+    description: Mapped[str] = mapped_column(nullable=True)
     
     slots: Mapped["TimeSlots"] = relationship(back_populates="slots") # type: ignore
