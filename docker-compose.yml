@@ -1,0 +1,21 @@
+services:
+  db:
+    container_name: booking_rooms_db
+    image: postgres:15
+    environment:
+      POSTGRES_USER: ${DB_USER:-root}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-root}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - ${POSTGRES_PORT:-5432}:5432
+    volumes:
+      - booking_rooms_db_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - booking_rooms_db_net
+
+volumes:
+  booking_rooms_db_data:
+
+networks:
+  booking_rooms_db_net:
