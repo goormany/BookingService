@@ -1,5 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.repos import * # noqa
 
 class DBManager:
     def __init__(self, session_maker):
@@ -9,6 +10,10 @@ class DBManager:
         self.session: AsyncSession = self.session_maker()
         
         # repos
+        self.users = UserRepository(self.session)
+        self.bookings = BookingRepository(self.session)
+        self.time_slots = TimeSlotRepository(self.session)
+        self.rooms = RoomRepository(self.session)
         
         
         return self
