@@ -31,5 +31,5 @@ async def login_user(db: DBDep, user_data: Annotated[OAuth2PasswordRequestForm, 
     if not AuthServices.verify_password(user_data.password, user.hashed_password):
         raise InvalidCredentialsException
     
-    token = AuthServices.create_access_token({"sub": user.username})
+    token = AuthServices.create_access_token({"sub": str(user.id)})
     return TokenData(access_token=token)

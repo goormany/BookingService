@@ -10,10 +10,10 @@ class UserBase(BaseModel):
 class UserIn(UserBase):
     password: str
 
-class UserWithHashedPassword(UserBase):
-    hashed_password: str
-
 class UserResponse(UserBase):
     id: int
     role: UserRoleEnum
     created_at: datetime
+
+class UserWithHashedPassword(UserResponse):
+    hashed_password: str

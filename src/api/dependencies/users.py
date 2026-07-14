@@ -15,10 +15,10 @@ async def get_current_user(db:DBDep, token: tokenDep) -> UserResponse:
         jwt_data = AuthServices.decode_access_token(token)
     except (InvalidTokenDecodedException, ExpiredJWTTokenException):
         raise UnauthorizedHTTPException
-    username = jwt_data.sub
+    user_id = int(jwt_data.sub)
     
     try:
-        return await UserService(db).get_user(username=username)
+        return await UserService(db).get_user(id=user_id)
     except UserNotFoundException:
         raise UnauthorizedHTTPException
 
