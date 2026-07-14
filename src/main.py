@@ -7,12 +7,14 @@ from fastapi import FastAPI
 sys.path.append(str(Path(__file__).parent.parent))
 
 from src.config import settings
+from src.api import router as api_router
 
 
 app = FastAPI(
     debug=settings.IS_DEBUG,
     title="Сервис бронирования переговорных комнат (API)"
 )
+app.include_router(api_router, prefix="/api")
 
 
 if __name__ == "__main__":

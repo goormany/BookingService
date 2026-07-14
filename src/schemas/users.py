@@ -7,8 +7,11 @@ from src.utils.enums.user_roles import UserRoleEnum
 class UserBase(BaseModel):
     username: str
 
-class UserCreate(UserBase):
+class UserIn(UserBase):
     password: str
+
+class UserWithHashedPassword(UserBase):
+    hashed_password: str
 
 class UserResponse(UserBase):
     id: int

@@ -18,3 +18,20 @@ class BookingRoomsHTTPException(HTTPException):
         if headers is not None:
             self.headers = headers
         super().__init__(status_code=self.status_code, detail=self.detail, headers=headers)
+    
+
+# USERS
+class UsersUniquessHTTPException(BookingRoomsHTTPException):
+    detail = "Пользователь с таким логином уже существует"
+    status_code = 409
+
+# AUTH
+class UnauthorizedHTTPException(BookingRoomsHTTPException):
+    detail = "Не удалсь авторизовать"
+    status_code = 401
+    headers = {"WWW-Authenticate": "Bearer"}
+
+class InvalidCredentialsException(BookingRoomsHTTPException):
+    detail = "Не верные данные авторизации"
+    status_code = 401
+    headers = {"WWW-Authenticate": "Bearer"}
