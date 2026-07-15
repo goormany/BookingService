@@ -36,6 +36,9 @@ class InvalidCredentialsException(BookingRoomsHTTPException):
     status_code = 401
     headers = {"WWW-Authenticate": "Bearer"}
 
+class ForbbidenHTTPException(BookingRoomsHTTPException):
+    detail = "Отказано в доступе"
+    status_code = 403
 
 # ROOMS
 class RoomUniquessHTTPException(BookingRoomsHTTPException):
