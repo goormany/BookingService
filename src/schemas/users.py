@@ -15,5 +15,8 @@ class UserResponse(UserBase):
     role: UserRoleEnum
     created_at: datetime
 
-class UserWithHashedPassword(UserBase):
+class UserCreate(UserBase):
     hashed_password: str
+
+class UserWithHashedPassword(UserResponse, UserCreate):
+    pass

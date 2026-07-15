@@ -1,4 +1,4 @@
-from src.schemas.users import UserWithHashedPassword, UserIn, UserResponse, UserWithHashedPassword
+from src.schemas.users import UserCreate, UserIn, UserResponse, UserCreate, UserWithHashedPassword
 from src.services.base import BaseServices
 from src.services.auth import AuthServices
 from src.utils.exceptions.exceptions import BookingRoomsNotFoundObjException, BookingRoomsObjUniquessException, UserNotFoundException, UsersUniquessException
@@ -6,7 +6,7 @@ from src.utils.exceptions.exceptions import BookingRoomsNotFoundObjException, Bo
 class UserService(BaseServices):
     async def create_user(self, user_data: UserIn) -> UserResponse:
         hashed_password = AuthServices.get_password_hash(user_data.password)
-        new_user_data = UserWithHashedPassword(**user_data.model_dump(), hashed_password=hashed_password)
+        new_user_data = UserCreate(**user_data.model_dump(), hashed_password=hashed_password)
         
         try:
             user = await self.db.users.add(new_user_data)
