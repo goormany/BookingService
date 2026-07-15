@@ -10,7 +10,7 @@ class RoomCreate(BaseModel):
     
 class RoomView(RoomCreate):
     id: int
-    created_ad: datetime
+    created_at: datetime
 
 class RoomUpdate(RoomCreate):
     name: str | None = None
