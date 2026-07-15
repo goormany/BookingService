@@ -1,11 +1,9 @@
 from sqlalchemy import select
-from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import selectinload
 
 from src.repos.base import BaseRepository
 from src.data_mappers.rooms import RoomDataMapper
 from src.schemas.rooms import RoomWithSlotsResponse
-from src.utils.exceptions.exceptions import BookingRoomsNotFoundObjException, RoomNotFoundException
 
 
 class RoomRepository(BaseRepository):
@@ -18,9 +16,19 @@ class RoomRepository(BaseRepository):
             .options(selectinload(self.mapper.db_model.slots))
         )
         result = await self.session.execute(query)
-        try:
-            room = result.scalar_one()
-        except NoResultFound:
-            raise RoomNotFoundException
+        row = result.scalar_one_or_none()
 
-        return RoomWithSlotsResponse.model_validate(room, from_attributes=True)
+        if row is None:
+            from src.utils.exceptions.exceptions import BookingRoomsNotFoundObjException
+            raise BookingRoomsNotFoundObjException
+
+        return RoomWithSlotsResponse.model_validate(row, from_attributes=True)
+
+    async def get_all_with_slots(self) -> list[RoomWithSlotsResponse]:
+        query = (
+            select(self.mapper.db_model)
+            .options(selectinload(self.mapper.db_model.slots))
+        )
+        result = await self.session.execute(query)
+        rooms = result.scalars().all()
+        return [RoomWithSlotsResponse.model_validate(room, from_attributes=True) for room in rooms]
