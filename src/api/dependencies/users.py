@@ -8,7 +8,8 @@ from src.schemas.users import UserResponse
 from src.services.auth import AuthServices
 from src.services.users import UserService
 from src.utils.exceptions.exceptions import ExpiredJWTTokenException, InvalidTokenDecodedException, UserNotFoundException
-from src.utils.exceptions.http_exceptions import UnauthorizedHTTPException
+from src.utils.exceptions.http_exceptions import ForbbidenHTTPException, UnauthorizedHTTPException
+from src.utils.enums.user_roles import UserRoleEnum
 
 async def get_current_user(db:DBDep, token: tokenDep) -> UserResponse:
     try:
@@ -23,4 +24,16 @@ async def get_current_user(db:DBDep, token: tokenDep) -> UserResponse:
         raise UnauthorizedHTTPException
 
 CurUserDep = Annotated[UserResponse, Depends(get_current_user)]
-    
+
+async def get_employee_user(user: CurUserDep):
+    if user.role != UserRoleEnum.EMPLOYEE.value:
+        raise ForbbidenHTTPException
+    return user
+
+async def get_admin_user(user: CurUserDep):
+    if user.role != UserRoleEnum.ADMIN.value:
+        raise ForbbidenHTTPException
+    return user
+
+EmployeeDep = Annotated[UserResponse, Depends(get_employee_user)]
+AdminDep = Annotated[UserResponse, Depends(get_admin_user)]
