@@ -21,6 +21,12 @@ class RoomService(BaseServices):
         except BookingRoomsNotFoundObjException:
             raise RoomNotFoundException
         
+    async def get_room_with_slots(self, room_id: int):
+        try:
+            return await self.db.rooms.get_room_with_slots(room_id)
+        except RoomNotFoundException:
+            raise RoomNotFoundException
+        
     async def update_room(self, room_data: RoomUpdate, *args, **kwargs):
         try:
             room = await self.db.rooms.edit(room_data, True, *args, **kwargs)

@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Path
 
 from src.api.dependencies.db import DBDep
-from src.schemas.rooms import RoomView, RoomCreate, RoomUpdate
+from src.schemas.rooms import RoomView, RoomWithSlotsResponse, RoomCreate, RoomUpdate
 from src.services.rooms import RoomService
 from src.utils.exceptions.exceptions import RoomNotFoundException, RoomUniquessException
 from src.utils.exceptions.http_exceptions import RoomNotFoundHTTPException, RoomUniquessHTTPException
@@ -19,10 +19,10 @@ async def create_room(db: DBDep, room_data: RoomCreate):
     except RoomUniquessException:
         raise RoomUniquessHTTPException
     
-@router.get("/{room_id}", status_code=200, response_model=RoomView)
+@router.get("/{room_id}", status_code=200, response_model=RoomWithSlotsResponse)
 async def get_room_by_id(db: DBDep, room_id: int = Path(ge=0)):
     try:
-        return await RoomService(db).get_room(id=room_id)
+        return await RoomService(db).get_room_with_slots(room_id)
     except RoomNotFoundException:
         raise RoomNotFoundHTTPException
 
