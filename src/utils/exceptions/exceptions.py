@@ -34,3 +34,11 @@ class RoomUniquessException(BookingRoomsBaseException):
     
 class RoomNotFoundException(BookingRoomsNotFoundObjException):
     detail = "Комната не найдена"
+    
+
+# SLOTS
+class TimeSlotsUniquessException(BookingRoomsBaseException):
+    detail = "Комната имеет расписание на это время"
+
+class TimeSlotNotFoundException(BookingRoomsBaseException):
+    detail = "Временой слот не найден"

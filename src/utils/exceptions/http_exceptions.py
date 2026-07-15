@@ -45,3 +45,13 @@ class RoomUniquessHTTPException(BookingRoomsHTTPException):
 class RoomNotFoundHTTPException(BookingRoomsHTTPException):
     detail = "Комната не найдена"
     status_code = 404
+    
+    
+# SLOTS
+class TimeSlotsUniquessHTTPException(BookingRoomsHTTPException):
+    detail = "Уже есть расписание слота в этой комнату на это время"
+    status_code = 409
+
+class TimeSlotNotFoundHTTPException(BookingRoomsHTTPException):
+    detail = "Временной слот не найден"
+    status_code = 404
