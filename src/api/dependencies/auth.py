@@ -29,7 +29,14 @@ async def refresh_token(db: DBDep, request: RefreshTokenRequest = Body(...)) -> 
     except UserNotFoundException:
         raise UnauthorizedHTTPException
     
-    access_token = AuthServices().create_access_token(str(user_id), timedelta(minutes=settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES))
-    return TokenData(access_token=access_token, refresh_token=refresh_token)
+    new_access_token = AuthServices.create_access_token(
+        str(user_id), 
+        timedelta(minutes=settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES)
+    )
+    new_refresh_token = AuthServices.create_access_token(
+        str(user_id), 
+        timedelta(days=settings.JWT_REFRESH_TOKEN_EXPIRE_DAYS)
+    )
+    return TokenData(access_token=new_access_token, refresh_token=new_refresh_token)
 
 RefreshTokenDep = Annotated[TokenData, Depends(refresh_token)]

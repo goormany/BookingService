@@ -11,6 +11,7 @@ from src.utils.exceptions.exceptions import ExpiredJWTTokenException, InvalidTok
 password_hasher = PasswordHash.recommended()
 
 class AuthServices(BaseServices):
+    @staticmethod
     def _create_data_for_token(user_id: str) -> dict[str, str]:
         return {
             "sub": user_id

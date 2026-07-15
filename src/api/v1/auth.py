@@ -34,8 +34,8 @@ async def login_user(db: DBDep, user_data: Annotated[OAuth2PasswordRequestForm, 
     if not AuthServices.verify_password(user_data.password, user.hashed_password):
         raise InvalidCredentialsException
     
-    jwt_token = AuthServices().create_access_token(str(user.id), timedelta(minutes=settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES))
-    refresh_token = AuthServices().create_access_token(str(user.id), timedelta(days=settings.JWT_RERESH_TOKEN_EXPIRE_DAYS))
+    jwt_token = AuthServices.create_access_token(str(user.id), timedelta(minutes=settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES))
+    refresh_token = AuthServices.create_access_token(str(user.id), timedelta(days=settings.JWT_REFRESH_TOKEN_EXPIRE_DAYS))
     return TokenData(access_token=jwt_token, refresh_token=refresh_token)
 
 @router.post("/refresh", response_model=TokenData, status_code=200)
