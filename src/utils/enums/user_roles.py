@@ -1,5 +1,5 @@
 from enum import StrEnum
 
 class UserRoleEnum(StrEnum):
-    ADIMN = "admin"
+    ADMIN = "admin"
     EMPLOYEE = "employee"
