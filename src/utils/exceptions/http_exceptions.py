@@ -35,3 +35,13 @@ class InvalidCredentialsException(BookingRoomsHTTPException):
     detail = "Не верные данные авторизации"
     status_code = 401
     headers = {"WWW-Authenticate": "Bearer"}
+
+
+# ROOMS
+class RoomUniquessHTTPException(BookingRoomsHTTPException):
+    detail = "Ошибка уникаольности команты"
+    status_code = 409
+
+class RoomNotFoundHTTPException(BookingRoomsHTTPException):
+    detail = "Комната не найдена"
+    status_code = 404

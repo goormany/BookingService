@@ -105,6 +105,6 @@ class BaseRepository:
         )
         result = await self.session.execute(stmt)
         try:
-            return self.mapper.map_to_schema(result)
+            return self.mapper.map_to_schema(result.scalar_one())
         except NoResultFound:
             raise BookingRoomsNotFoundObjException

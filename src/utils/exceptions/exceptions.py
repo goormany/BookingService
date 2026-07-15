@@ -27,3 +27,10 @@ class UsersUniquessException(BookingRoomsBaseException):
 
 class UserNotFoundException(BookingRoomsBaseException):
     detail = "Пользователь не найден"
+
+# ROOMS
+class RoomUniquessException(BookingRoomsBaseException):
+    detail = "Ошибка уникальности комнаты"
+    
+class RoomNotFoundException(BookingRoomsNotFoundObjException):
+    detail = "Комната не найдена"
