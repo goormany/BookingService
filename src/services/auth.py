@@ -11,6 +11,11 @@ from src.utils.exceptions.exceptions import ExpiredJWTTokenException, InvalidTok
 password_hasher = PasswordHash.recommended()
 
 class AuthServices(BaseServices):
+    def _create_data_for_token(user_id: str) -> dict[str, str]:
+        return {
+            "sub": user_id
+        }
+    
     @staticmethod
     def get_password_hash(password: str) -> str:
         return password_hasher.hash(password)
@@ -19,10 +24,10 @@ class AuthServices(BaseServices):
     def verify_password(plain_password: str, hashed_password: str) -> bool:
         return password_hasher.verify(plain_password, hashed_password)
     
-    @staticmethod
-    def create_access_token(data: dict) -> str:
-        to_encode = data.copy()
-        expire = datetime.now(timezone.utc) + timedelta(settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES)
+    @classmethod
+    def create_access_token(cls, sub: str, expire_time: timedelta) -> str:
+        to_encode = cls._create_data_for_token(sub)
+        expire = datetime.now(timezone.utc) + expire_time
         to_encode |= {"exp": expire}
         encoded_jwt = jwt.encode(to_encode, settings.JWT_SECRET_KEY, settings.JWT_ALGORITHM)
         return encoded_jwt
