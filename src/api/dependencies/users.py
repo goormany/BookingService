@@ -26,7 +26,7 @@ async def get_current_user(db:DBDep, token: tokenDep) -> UserResponse:
 CurUserDep = Annotated[UserResponse, Depends(get_current_user)]
 
 async def get_employee_user(user: CurUserDep):
-    if user.role != UserRoleEnum.EMPLOYEE.value:
+    if user.role not in (UserRoleEnum.EMPLOYEE.value, UserRoleEnum.ADMIN.value):
         raise ForbbidenHTTPException
     return user
 

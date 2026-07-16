@@ -1,14 +1,15 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Path
+from fastapi import APIRouter, Depends, Path
 
 from src.api.dependencies.db import DBDep
 from src.schemas.time_slots import TimeSlotsIn, TimeSlotsResponse
 from src.services.time_slots import TimeSlotService
 from src.utils.exceptions.exceptions import RoomNotFoundException, TimeSlotNotFoundException, TimeSlotsUniquessException
 from src.utils.exceptions.http_exceptions import RoomNotFoundHTTPException, TimeSlotNotFoundHTTPException, TimeSlotsUniquessHTTPException
+from src.api.dependencies.users import get_admin_user
 
-router = APIRouter(prefix="/{room_id}/slots", tags=["Slots"])
+router = APIRouter(prefix="/{room_id}/slots", tags=["Slots"], dependencies=[Depends(get_admin_user)])
 
 @router.post("/", status_code=201, response_model=TimeSlotsResponse)
 async def create_slots(db: DBDep, time_slots_data: TimeSlotsIn, room_id: int = Path(ge=0)):
