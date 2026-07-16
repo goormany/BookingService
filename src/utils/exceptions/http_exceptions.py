@@ -25,6 +25,14 @@ class UsersUniquessHTTPException(BookingRoomsHTTPException):
     detail = "Пользователь с таким логином уже существует"
     status_code = 409
 
+class UserNotFoundHTTPException(BookingRoomsHTTPException):
+    detail = "Пользователь не найден"
+    status_code = 404
+
+class UserSoftDeleteAccountException(BookingRoomsHTTPException):
+    detail = "Ваш аккаунт удален"
+    status_code = 403
+
 # AUTH
 class UnauthorizedHTTPException(BookingRoomsHTTPException):
     detail = "Не удалсь авторизовать"

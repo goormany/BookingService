@@ -14,9 +14,13 @@ class UserResponse(UserBase):
     id: int
     role: UserRoleEnum
     created_at: datetime
+    is_active: bool
 
 class UserCreate(UserBase):
     hashed_password: str
 
 class UserWithHashedPassword(UserResponse, UserCreate):
     pass
+
+class UserRoleSchema(BaseModel):
+    role: UserRoleEnum

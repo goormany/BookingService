@@ -8,7 +8,7 @@ from src.schemas.users import UserResponse
 from src.services.auth import AuthServices
 from src.services.users import UserService
 from src.utils.exceptions.exceptions import ExpiredJWTTokenException, InvalidTokenDecodedException, UserNotFoundException
-from src.utils.exceptions.http_exceptions import ForbbidenHTTPException, UnauthorizedHTTPException
+from src.utils.exceptions.http_exceptions import ForbbidenHTTPException, UnauthorizedHTTPException, UserSoftDeleteAccountException
 from src.utils.enums.user_roles import UserRoleEnum
 
 async def get_current_user(db:DBDep, token: tokenDep) -> UserResponse:
@@ -19,9 +19,14 @@ async def get_current_user(db:DBDep, token: tokenDep) -> UserResponse:
     user_id = int(jwt_data.sub)
     
     try:
-        return await UserService(db).get_user(id=user_id)
+        user = await UserService(db).get_user(id=user_id)
     except UserNotFoundException:
         raise UnauthorizedHTTPException
+    
+    if not user.is_active:
+        raise UserSoftDeleteAccountException
+    
+    return user
 
 CurUserDep = Annotated[UserResponse, Depends(get_current_user)]
 
