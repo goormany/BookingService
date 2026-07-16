@@ -1,13 +1,56 @@
-from collections import defaultdict
+from datetime import date, time
 
-from src.schemas.time_slots import TimeSlotsResponse
+from src.schemas.bookings import AvailabilityResponse, BookingCreate, BookingIn, BookingResponse, FreeInterval, RoomAvailability, SoftDeleteBooking
 from src.services.base import BaseServices
-from src.schemas.bookings import AvailabilityResponse, BookingCreate, BookingIn, BookingResponse, RoomAvailability, SoftDeleteBooking
 from src.utils.enums.status_bookings import StatusBookingEnum
 from src.utils.exceptions.exceptions import BookingAlreadyBusyException, BookingNotFoundException, BookingRoomsInvalidObjReferences, BookingRoomsNotFoundObjException, BookingRoomsObjUniquessException, RoomNotFoundException
-from src.services.time_slots import TimeSlotService
 
 class BookingService(BaseServices):    
+    async def get_availability(self, booking_date: date) -> AvailabilityResponse:
+        rooms = await self.db.rooms.get_all_with_slots()
+        
+        bookings = await self.db.bookings.get_active_bookings_by_date(booking_date)
+        
+        # Группируем бронирования по комнатам
+        bookings_by_room: dict[int, list[tuple[time, time]]] = {}
+        for booking in bookings:
+            bookings_by_room.setdefault(booking.room_id, []).append(
+                (booking.start_time, booking.end_time)
+            )
+        
+        room_availabilities: list[RoomAvailability] = []
+        
+        for room in rooms:
+            room_booked = bookings_by_room.get(room.id, [])
+            free_slots: list[FreeInterval] = []
+            
+            for slot in room.slots:
+                start = slot.start
+                end = slot.end
+                
+                overlapping = [
+                    (bs, be) for bs, be in room_booked
+                    if bs < end and be > start
+                ]
+                
+                overlapping.sort(key=lambda x: x[0])
+                
+                cursor = start
+                for bs, be in overlapping:
+                    if cursor < bs:
+                        free_slots.append(FreeInterval(start_time=cursor, end_time=bs))
+                    cursor = max(cursor, be)
+                
+                if cursor < end:
+                    free_slots.append(FreeInterval(start_time=cursor, end_time=end))
+            
+            room_availabilities.append(RoomAvailability(
+                room_id=room.id,
+                room_name=room.name,
+                slots=free_slots,
+            ))
+        
+        return AvailabilityResponse(date=booking_date, rooms=room_availabilities)
     
     async def get_all_bookings_adm(self, *args, **kwargs) -> list[BookingResponse]:
         if kwargs.get("room_id", None) is None:
