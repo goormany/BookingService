@@ -14,6 +14,7 @@ class DBManager:
         self.bookings = BookingRepository(self.session)
         self.time_slots = TimeSlotRepository(self.session)
         self.rooms = RoomRepository(self.session)
+        self.health = HealthRepository(self.session)
         
         
         return self

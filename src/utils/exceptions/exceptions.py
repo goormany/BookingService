@@ -50,3 +50,7 @@ class BookingAlreadyBusyException(BookingRoomsBaseException):
 
 class BookingNotFoundException(BookingRoomsBaseException):
     detail = "Бронь не найдена"
+    
+# CONNECTIONS
+class BookingNotConnDBException(BookingRoomsBaseException):
+    detail = "Нет связи с базой данных"

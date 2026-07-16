@@ -75,3 +75,9 @@ class BookingAlreadyBusyHTTPException(BookingRoomsHTTPException):
 class BookingNotFoundHTTPException(BookingRoomsHTTPException):
     detail = "Бронь не найдена"
     status_code = 404
+    
+
+# CONNECTION
+class BookingNotConnDBHTTPException(BookingRoomsHTTPException):
+    detail = "Нет связи с базой данных"
+    status_code = 500

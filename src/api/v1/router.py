@@ -5,6 +5,7 @@ from src.api.v1.users import router as user_router
 from src.api.v1.rooms import router as room_router
 from src.api.v1.time_slots import router as time_slots_router
 from src.api.v1.bookings import router as bookings_router
+from src.api.v1.health import router as health_router
 
 router = APIRouter(prefix="/v1")
 
@@ -14,3 +15,4 @@ router.include_router(auth_router)
 router.include_router(user_router)
 router.include_router(room_router)
 router.include_router(bookings_router)
+router.include_router(health_router)
