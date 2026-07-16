@@ -5,11 +5,48 @@ from src.services.base import BaseServices
 from src.utils.enums.status_bookings import StatusBookingEnum
 from src.utils.exceptions.exceptions import BookingAlreadyBusyException, BookingNotFoundException, BookingRoomsInvalidObjReferences, BookingRoomsNotFoundObjException, BookingRoomsObjUniquessException, RoomNotFoundException
 
-class BookingService(BaseServices):    
-    async def get_availability(self, booking_date: date) -> AvailabilityResponse:
-        rooms = await self.db.rooms.get_all_with_slots()
+class BookingService(BaseServices):
+    def _compute_free_slots(
+        self,
+        slots: list,
+        booked_intervals: list[tuple[time, time]],
+    ) -> list[FreeInterval]:
+        free_slots: list[FreeInterval] = []
+        for slot in slots:
+            start = slot.start
+            end = slot.end
+            
+            overlapping = [
+                (bs, be) for bs, be in booked_intervals
+                if bs < end and be > start
+            ]
+            overlapping.sort(key=lambda x: x[0])
+            
+            cursor = start
+            for bs, be in overlapping:
+                if cursor < bs:
+                    free_slots.append(FreeInterval(start_time=cursor, end_time=bs))
+                cursor = max(cursor, be)
+            
+            if cursor < end:
+                free_slots.append(FreeInterval(start_time=cursor, end_time=end))
         
-        bookings = await self.db.bookings.get_active_bookings_by_date(booking_date)
+        return free_slots
+    
+    async def get_availability(
+        self, booking_date: date, room_id: int | None = None
+    ) -> AvailabilityResponse:
+        if room_id is not None:
+            try:
+                rooms = [await self.db.rooms.get_room_with_slots(room_id)]
+            except RoomNotFoundException:
+                raise RoomNotFoundException
+        else:
+            rooms = await self.db.rooms.get_all_with_slots()
+        
+        bookings = await self.db.bookings.get_active_bookings_by_date(
+            booking_date, room_id=room_id
+        )
         
         # Группируем бронирования по комнатам
         bookings_by_room: dict[int, list[tuple[time, time]]] = {}
@@ -22,27 +59,7 @@ class BookingService(BaseServices):
         
         for room in rooms:
             room_booked = bookings_by_room.get(room.id, [])
-            free_slots: list[FreeInterval] = []
-            
-            for slot in room.slots:
-                start = slot.start
-                end = slot.end
-                
-                overlapping = [
-                    (bs, be) for bs, be in room_booked
-                    if bs < end and be > start
-                ]
-                
-                overlapping.sort(key=lambda x: x[0])
-                
-                cursor = start
-                for bs, be in overlapping:
-                    if cursor < bs:
-                        free_slots.append(FreeInterval(start_time=cursor, end_time=bs))
-                    cursor = max(cursor, be)
-                
-                if cursor < end:
-                    free_slots.append(FreeInterval(start_time=cursor, end_time=end))
+            free_slots = self._compute_free_slots(room.slots, room_booked)
             
             room_availabilities.append(RoomAvailability(
                 room_id=room.id,

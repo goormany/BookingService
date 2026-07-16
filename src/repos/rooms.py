@@ -1,9 +1,11 @@
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
+from sqlalchemy.exc import NoResultFound
 
 from src.repos.base import BaseRepository
 from src.data_mappers.rooms import RoomDataMapper
 from src.schemas.rooms import RoomWithSlotsResponse
+from src.utils.exceptions.exceptions import RoomNotFoundException
 
 
 class RoomRepository(BaseRepository):
@@ -16,13 +18,12 @@ class RoomRepository(BaseRepository):
             .options(selectinload(self.mapper.db_model.slots))
         )
         result = await self.session.execute(query)
-        row = result.scalar_one_or_none()
+        try:
+            room = result.scalar_one()
+        except NoResultFound:
+            raise RoomNotFoundException
 
-        if row is None:
-            from src.utils.exceptions.exceptions import BookingRoomsNotFoundObjException
-            raise BookingRoomsNotFoundObjException
-
-        return RoomWithSlotsResponse.model_validate(row, from_attributes=True)
+        return RoomWithSlotsResponse.model_validate(room, from_attributes=True)
 
     async def get_all_with_slots(self) -> list[RoomWithSlotsResponse]:
         query = (

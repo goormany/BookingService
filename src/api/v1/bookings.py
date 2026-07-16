@@ -5,7 +5,7 @@ from fastapi import APIRouter, Body, Path, Query
 
 from src.api.dependencies.db import DBDep
 from src.api.dependencies.users import CurUserDep
-from src.schemas.bookings import AvailabilityResponse, BookingIn, BookingResponse
+from src.schemas.bookings import AvailabilityResponse, BookingIn, BookingResponse, RoomAvailability
 from src.services.bookings import BookingService
 from src.utils.enums.status_bookings import StatusBookingEnum
 from src.utils.exceptions.exceptions import BookingAlreadyBusyException, BookingNotFoundException, RoomNotFoundException
@@ -44,3 +44,11 @@ async def get_my_bookings(db: DBDep, user: CurUserDep):
 @router.get("/availability", status_code=200, response_model=AvailabilityResponse)
 async def get_availability_by_date(db: DBDep, date: date = Query(example="2026-07-16")):
     return await BookingService(db).get_availability(booking_date=date)
+
+@router.get("/availability/{room_id}", status_code=200, response_model=RoomAvailability)
+async def get_availability_by_date_and_room(db: DBDep, room_id: int = Path(ge=0), date: date = Query(example="2026-07-16")):
+    try:
+        bookings = await BookingService(db).get_availability(booking_date=date, room_id=room_id)
+        return bookings.rooms[0]
+    except RoomNotFoundException:
+        raise RoomNotFoundHTTPException
