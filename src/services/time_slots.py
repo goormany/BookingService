@@ -21,3 +21,6 @@ class TimeSlotService(BaseServices):
             raise TimeSlotNotFoundException
         await self.db.commit()
         return slot
+    
+    async def get_all(self) -> list[TimeSlotsResponse]:
+        return await self.db.time_slots.get_all()

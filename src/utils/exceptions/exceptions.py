@@ -42,3 +42,11 @@ class TimeSlotsUniquessException(BookingRoomsBaseException):
 
 class TimeSlotNotFoundException(BookingRoomsBaseException):
     detail = "Временой слот не найден"
+    
+
+# BOOKINGS
+class BookingAlreadyBusyException(BookingRoomsBaseException):
+    detail = "Комната уже забронирован на это время"
+
+class BookingNotFoundException(BookingRoomsBaseException):
+    detail = "Бронь не найдена"

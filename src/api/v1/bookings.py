@@ -1,14 +1,46 @@
 from datetime import date
+from typing import Annotated
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Body, Path, Query
 
 from src.api.dependencies.db import DBDep
-from src.schemas.bookings import AvailabilityResponse, BookingResponse
+from src.api.dependencies.users import CurUserDep
+from src.schemas.bookings import AvailabilityResponse, BookingIn, BookingResponse
 from src.services.bookings import BookingService
+from src.utils.enums.status_bookings import StatusBookingEnum
+from src.utils.exceptions.exceptions import BookingAlreadyBusyException, BookingNotFoundException, RoomNotFoundException
+from src.utils.exceptions.http_exceptions import BookingAlreadyBusyHTTPException, BookingNotFoundHTTPException, RoomNotFoundHTTPException
 
 router = APIRouter(prefix="/bookings", tags=["Bookings"])
 
 
+@router.get("/", status_code=200, response_model=list[BookingResponse])
+async def get_all_bookings(db: DBDep,
+                           date: date = Query(example="2026-07-16"),
+                           status: StatusBookingEnum | None = Query(None),
+                           room_id: int | None = Query(None)):
+    return await BookingService(db).get_all_bookings_adm(room_id=room_id, booking_date=date, status=status)
+
+@router.post("/{room_id}", status_code=201, response_model=BookingResponse)
+async def create_booking(db: DBDep, room_id: Annotated[int, Path(ge=0)], user: CurUserDep, booking_data: BookingIn):
+    try:
+        return await BookingService(db).create_booking(booking_data, user_id=user.id, room_id=room_id)
+    except BookingAlreadyBusyException:
+        raise BookingAlreadyBusyHTTPException
+    except RoomNotFoundException:
+        raise RoomNotFoundHTTPException
+
+@router.delete("/{room_id}/{booking_id}", status_code=200, response_model=BookingResponse)
+async def cancelled_my_bookgng(db: DBDep, user: CurUserDep, room_id: int, booking_id: int):
+    try:
+        return await BookingService(db).soft_delete_booking(room_id=room_id, user_id=user.id, id=booking_id)
+    except BookingNotFoundException:
+        raise BookingNotFoundHTTPException
+
+@router.get("/my", status_code=200, response_model=list[BookingResponse])
+async def get_my_bookings(db: DBDep, user: CurUserDep):
+    return await BookingService(db).get_my_bookings(user_id=user.id)
+
 @router.get("/availability", status_code=200, response_model=AvailabilityResponse)
-async def get_availability(db: DBDep, date: date = Query(..., description="Дата в формате YYYY-MM-DD")):
-    return await BookingService(db).get_availability(date)
+async def get_availability_by_date(db: DBDep, date: date = Query(example="2026-07-16")):
+    return await BookingService(db).get_availability(booking_date=date)
