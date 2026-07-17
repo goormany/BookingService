@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 
 from src.api.dependencies.db import DBDep
-from src.services.health import HealthSearvice
+from src.services.health import HealthService
 from src.utils.exceptions.exceptions import BookingNotConnDBException
 from src.utils.exceptions.http_exceptions import BookingNotConnDBHTTPException
 
@@ -22,7 +22,7 @@ async def check_health(db: DBDep):
     - `500 Internal Server Error` — нет подключения к базе данных.
     """
     try:
-        await HealthSearvice(db).check()
+        await HealthService(db).check()
     except BookingNotConnDBException:
         raise BookingNotConnDBHTTPException
     return {"ok": True}
