@@ -29,10 +29,17 @@ async def create_booking(db: DBDep, room_id: Annotated[int, Path(ge=0)], user: E
     except RoomNotFoundException:
         raise RoomNotFoundHTTPException
 
-@router.delete("/{room_id}/{booking_id}", status_code=200, response_model=BookingResponse)
-async def cancelled_my_bookgng(db: DBDep, user: EmployeeDep, room_id: int, booking_id: int):
+@router.delete("/my/{booking_id}", status_code=200, response_model=BookingResponse)
+async def cancelled_my_bookgng(db: DBDep, user: EmployeeDep, booking_id: Annotated[int, Path(ge=0)]):
     try:
-        return await BookingService(db).soft_delete_booking(room_id=room_id, user_id=user.id, id=booking_id)
+        return await BookingService(db).soft_delete_booking(user_id=user.id, id=booking_id)
+    except BookingNotFoundException:
+        raise BookingNotFoundHTTPException
+
+@router.delete("/{booking_id}", status_code=200, response_model=BookingResponse, dependencies=[Depends(get_admin_user)])
+async def cancelled_user_booking(db: DBDep, booking_id: Annotated[int, Path(ge=0)]):
+    try:
+        return await BookingService(db).soft_delete_booking(id=booking_id)
     except BookingNotFoundException:
         raise BookingNotFoundHTTPException
 
