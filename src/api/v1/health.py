@@ -8,7 +8,7 @@ from src.utils.exceptions.http_exceptions import BookingNotConnDBHTTPException
 router = APIRouter(prefix="/health", tags=["Health"])
 
 
-@router.post(
+@router.get(
     "/",
     status_code=200,
     summary="Проверка состояния сервиса",
