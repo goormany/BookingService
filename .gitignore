@@ -86,4 +86,4 @@ $RECYCLE.BIN/
 *.seed
 *.pid.lock
 
-readme.local.md
+readme.local*.md
