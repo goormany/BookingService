@@ -5,7 +5,6 @@ class HealthService(BaseServices):
     async def check(self) -> bool:
         try:
             await self.check_db()
-            await self.check_redis()
         except BookingNotConnDBException:
             raise BookingNotConnDBException
     
@@ -15,8 +14,3 @@ class HealthService(BaseServices):
         except BookingNotConnDBException:
             raise BookingNotConnDBException
     
-    async def check_redis(self) -> bool:
-        try:
-            return await self.db.health.check_connect_redis()
-        except BookingNotConnRedisException:
-            raise BookingNotConnRedisException

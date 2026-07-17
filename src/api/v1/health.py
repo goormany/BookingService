@@ -25,6 +25,4 @@ async def check_health(db: DBDep):
         await HealthService(db).check()
     except BookingNotConnDBException:
         raise BookingNotConnDBHTTPException
-    except BookingNotConnRedisException:
-        raise BookingNotConnRedisHTTPException
     return {"ok": True}
