@@ -1,9 +1,10 @@
 from datetime import date, datetime, time, timezone
 import re
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 from src.utils.enums.status_bookings import StatusBookingEnum
+from src.utils.exceptions.exceptions import TimeValueValidationException
 
 class BookingIn(BaseModel):
     booking_date: date
@@ -30,6 +31,12 @@ class BookingCreate(FreeInterval):
     booking_date: date
     user_id: int
     room_id: int
+    
+    @model_validator(mode="after")
+    def check_time(self):
+        if self.start_time >= self.end_time:
+            raise TimeValueValidationException
+        return self
 
 class BookingResponse(BookingCreate):
     id: int

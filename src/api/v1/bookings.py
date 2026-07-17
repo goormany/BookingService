@@ -8,8 +8,8 @@ from src.schemas.bookings import AvailabilityResponse, BookingIn, BookingRespons
 from src.services.bookings import BookingService
 from src.api.dependencies.paginations import PaginationDep
 from src.utils.enums.status_bookings import StatusBookingEnum
-from src.utils.exceptions.exceptions import BookingAlreadyBusyException, BookingNotFoundException, RoomNotFoundException
-from src.utils.exceptions.http_exceptions import BookingAlreadyBusyHTTPException, BookingNotFoundHTTPException, RoomNotFoundHTTPException
+from src.utils.exceptions.exceptions import BookingAlreadyBusyException, BookingNotFoundException, RoomNotFoundException, TimeValueValidationException
+from src.utils.exceptions.http_exceptions import BookingAlreadyBusyHTTPException, BookingNotFoundHTTPException, RoomNotFoundHTTPException, TimeValueValidationHTTPException
 from src.api.dependencies.users import get_employee_user, get_admin_user, EmployeeDep
 
 router = APIRouter(prefix="/bookings", tags=["Bookings"])
@@ -64,7 +64,7 @@ async def create_booking(db: DBDep, room_id: Annotated[int, Path(ge=0)], user: E
     - **end_time**: Время окончания (HH:MM).
 
     **Возможные ошибки:**
-    - `409 Conflict` — комната уже забронирована на это время.
+    - `409 Conflict` — комната уже забронирована на это время или не верно указано время.
     - `404 Not Found` — комната с указанным ID не найдена.
 
     Доступ: employee, admin.
@@ -75,6 +75,8 @@ async def create_booking(db: DBDep, room_id: Annotated[int, Path(ge=0)], user: E
         raise BookingAlreadyBusyHTTPException
     except RoomNotFoundException:
         raise RoomNotFoundHTTPException
+    except TimeValueValidationException:
+        raise TimeValueValidationHTTPException
 
 
 @router.delete(

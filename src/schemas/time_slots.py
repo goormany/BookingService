@@ -3,7 +3,7 @@ import re
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
-from src.utils.exceptions.exceptions import TimeSlotValidationError
+from src.utils.exceptions.exceptions import TimeValueValidationException
 
 
 class TimeSlotsIn(BaseModel):
@@ -30,7 +30,7 @@ class TimeSlotsCreate(BaseModel):
     @model_validator(mode="after")
     def check_times(self):
         if self.start >= self.end:
-            raise TimeSlotValidationError
+            raise TimeValueValidationException
         return self
 
 class TimeSlotsResponse(TimeSlotsCreate):

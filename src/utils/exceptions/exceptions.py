@@ -56,5 +56,5 @@ class BookingNotConnDBException(BookingRoomsBaseException):
     detail = "Нет связи с базой данных"
     
 # UTILS
-class TimeSlotValidationError(BookingRoomsBaseException):
+class TimeValueValidationException(BookingRoomsBaseException):
     detail = "Не верный промежуток времени"

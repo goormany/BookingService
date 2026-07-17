@@ -3,7 +3,7 @@ from datetime import date, time
 from src.schemas.bookings import AvailabilityResponse, BookingCreate, BookingIn, BookingResponse, FreeInterval, RoomAvailability, SoftDeleteBooking
 from src.services.base import BaseServices
 from src.utils.enums.status_bookings import StatusBookingEnum
-from src.utils.exceptions.exceptions import BookingAlreadyBusyException, BookingNotFoundException, BookingRoomsInvalidObjReferences, BookingRoomsNotFoundObjException, BookingRoomsObjUniquessException, RoomNotFoundException
+from src.utils.exceptions.exceptions import BookingAlreadyBusyException, BookingNotFoundException, BookingRoomsInvalidObjReferences, BookingRoomsNotFoundObjException, BookingRoomsObjUniquessException, RoomNotFoundException, TimeValueValidationException
 
 class BookingService(BaseServices):
     def _compute_free_slots(
@@ -81,11 +81,14 @@ class BookingService(BaseServices):
         return await self.db.bookings.get_filtred(per_page=per_page, page=page, *args, **kwargs)
     
     async def create_booking(self, booking_data: BookingIn, room_id: int, user_id: int) -> BookingResponse:
-        new_booking_data = BookingCreate(
-            **booking_data.model_dump(),
-            room_id=room_id,
-            user_id=user_id
-        )
+        try:
+            new_booking_data = BookingCreate(
+                **booking_data.model_dump(),
+                room_id=room_id,
+                user_id=user_id
+            )
+        except TimeValueValidationException:
+            raise TimeValueValidationException
         try:
             booking = await self.db.bookings.create_booking(new_booking_data)
         except BookingAlreadyBusyException:

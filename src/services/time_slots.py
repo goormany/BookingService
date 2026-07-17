@@ -1,13 +1,13 @@
 from src.services.base import BaseServices
 from src.schemas.time_slots import TimeSlotsIn, TimeSlotsResponse, TimeSlotsCreate
-from src.utils.exceptions.exceptions import BookingRoomsInvalidObjReferences, BookingRoomsNotFoundObjException, BookingRoomsObjUniquessException, RoomNotFoundException, TimeSlotNotFoundException, TimeSlotValidationError, TimeSlotsUniquessException
+from src.utils.exceptions.exceptions import BookingRoomsInvalidObjReferences, BookingRoomsNotFoundObjException, BookingRoomsObjUniquessException, RoomNotFoundException, TimeSlotNotFoundException, TimeValueValidationException, TimeSlotsUniquessException
 
 class TimeSlotService(BaseServices):
     async def create_slot(self, time_slots_data: TimeSlotsIn, room_id: int) -> TimeSlotsResponse:
         try:
             data = TimeSlotsCreate(**time_slots_data.model_dump(), room_id=room_id)
-        except TimeSlotValidationError:
-            raise TimeSlotValidationError
+        except TimeValueValidationException:
+            raise TimeValueValidationException
         try:
             slot = await self.db.time_slots.add(data)
         except BookingRoomsInvalidObjReferences:

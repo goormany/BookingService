@@ -83,6 +83,6 @@ class BookingNotConnDBHTTPException(BookingRoomsHTTPException):
     status_code = 500
 
 # UTILS
-class TimeSlotValidationHTTPException(BookingRoomsHTTPException):
+class TimeValueValidationHTTPException(BookingRoomsHTTPException):
     detail = "Не верно указан промежуток времени"
     status_code = 409
