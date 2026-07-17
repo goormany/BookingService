@@ -3,8 +3,8 @@ from src.schemas.rooms import RoomCreate, RoomUpdate, RoomView
 from src.utils.exceptions.exceptions import BookingRoomsNotFoundObjException, BookingRoomsObjUniquessException, RoomNotFoundException, RoomUniquessException
 
 class RoomService(BaseServices):
-    async def get_all(self) -> list[RoomView]:
-        return await self.db.rooms.get_all()
+    async def get_all(self, per_page: int, page: int) -> list[RoomView]:
+        return await self.db.rooms.get_all(per_page=per_page, page=page)
     
     async def create(self, room_data: RoomCreate) -> RoomView:
         try:

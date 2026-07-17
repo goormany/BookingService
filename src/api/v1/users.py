@@ -6,6 +6,7 @@ from src.schemas.users import UserResponse, UserRoleSchema
 from src.services.users import UserService
 from src.api.dependencies.db import DBDep
 from src.api.dependencies.users import CurUserDep, get_admin_user
+from src.api.dependencies.paginations import PaginationDep
 from src.utils.enums.user_roles import UserRoleEnum
 from src.utils.exceptions.exceptions import UserNotFoundException
 from src.utils.exceptions.http_exceptions import UserNotFoundHTTPException
@@ -13,8 +14,8 @@ from src.utils.exceptions.http_exceptions import UserNotFoundHTTPException
 router = APIRouter(prefix="/users", tags=["Users"])
 
 @router.get("/", response_model=list[UserResponse], status_code=200, dependencies=[Depends(get_admin_user)])
-async def get_all_users(db: DBDep):
-    return await UserService(db).get_all()
+async def get_all_users(db: DBDep, pd: PaginationDep):
+    return await UserService(db).get_all(per_page=pd.per_page, page=pd.page)
 
 @router.get("/me", response_model=UserResponse, status_code=200)
 async def get_user_me(user_data: CurUserDep):

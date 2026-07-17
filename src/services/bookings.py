@@ -34,7 +34,11 @@ class BookingService(BaseServices):
         return free_slots
     
     async def get_availability(
-        self, booking_date: date, room_id: int | None = None
+        self,
+        booking_date: date,
+        per_page: int | None = None,
+        page: int | None = None,
+        room_id: int | None = None
     ) -> AvailabilityResponse:
         if room_id is not None:
             try:
@@ -42,7 +46,7 @@ class BookingService(BaseServices):
             except RoomNotFoundException:
                 raise RoomNotFoundException
         else:
-            rooms = await self.db.rooms.get_all_with_slots()
+            rooms = await self.db.rooms.get_all_with_slots(per_page=per_page, page=page)
         
         bookings = await self.db.bookings.get_active_bookings_by_date(
             booking_date, room_id=room_id
@@ -69,12 +73,12 @@ class BookingService(BaseServices):
         
         return AvailabilityResponse(date=booking_date, rooms=room_availabilities)
     
-    async def get_all_bookings_adm(self, *args, **kwargs) -> list[BookingResponse]:
+    async def get_all_bookings_adm(self, per_page: int, page: int, *args, **kwargs) -> list[BookingResponse]:
         if kwargs.get("room_id", None) is None:
             kwargs.pop("room_id")
         if kwargs.get("status", None) is None:
             kwargs.pop("status")
-        return await self.db.bookings.get_filtred(*args, **kwargs)
+        return await self.db.bookings.get_filtred(per_page=per_page, page=page, *args, **kwargs)
     
     async def create_booking(self, booking_data: BookingIn, room_id: int, user_id: int) -> BookingResponse:
         new_booking_data = BookingCreate(
@@ -91,8 +95,8 @@ class BookingService(BaseServices):
         await self.db.commit()
         return booking
     
-    async def get_my_bookings(self, user_id: int) -> list[BookingResponse]:
-        return await self.db.bookings.get_filtred(user_id=user_id)
+    async def get_my_bookings(self, per_page: int, page: int, user_id: int) -> list[BookingResponse]:
+        return await self.db.bookings.get_filtred(per_page=per_page, page=page, user_id=user_id)
     
     async def soft_delete_booking(self, *args, **kwargs) -> BookingResponse:
         try:

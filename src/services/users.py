@@ -28,8 +28,8 @@ class UserService(BaseServices):
         except BookingRoomsNotFoundObjException:
             raise UserNotFoundException
     
-    async def get_all(self) -> list[UserResponse]:
-        return await self.db.users.get_all()
+    async def get_all(self, per_page: int, page: int) -> list[UserResponse]:
+        return await self.db.users.get_all(per_page=per_page, page=page)
     
     async def change_user_role(self, user_id: int, role: UserRoleSchema) -> UserResponse:
         try:

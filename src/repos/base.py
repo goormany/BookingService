@@ -1,6 +1,6 @@
 from asyncpg import ForeignKeyViolationError, UniqueViolationError
 from pydantic import BaseModel
-from sqlalchemy import select, insert, update, delete
+from sqlalchemy import Select, select, insert, update, delete
 from sqlalchemy.exc import IntegrityError, NoResultFound
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -13,16 +13,19 @@ class BaseRepository:
     def __init__(self, session: AsyncSession):
         self.session = session
         
-    def _get_query_with_params(self, *args, **kwargs):
+    def _get_query_with_params(self, *args, **kwargs) -> Select:
         return select(self.mapper.db_model).filter(*args).filter_by(**kwargs)
     
-    async def get_filtred(self, *args, **kwargs):
+    async def get_filtred(self, per_page: int | None = None, page: int | None = None, *args, **kwargs):
         query = self._get_query_with_params(*args, **kwargs)
+        if per_page and page:
+            query = query.offset((page-1)*per_page).limit(per_page).order_by(self.mapper.db_model.id)
+        
         result = await self.session.execute(query)
         return [self.mapper.map_to_schema(res) for res in result.scalars().all()]
     
-    async def get_all(self):
-        return await self.get_filtred()
+    async def get_all(self, per_page: int | None, page: int | None):
+        return await self.get_filtred(per_page, page)
     
     async def get_one(self, *args, **kwargs):
         query = self._get_query_with_params(*args, **kwargs)
