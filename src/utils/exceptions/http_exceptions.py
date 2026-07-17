@@ -82,6 +82,10 @@ class BookingNotConnDBHTTPException(BookingRoomsHTTPException):
     detail = "Нет связи с базой данных"
     status_code = 500
 
+class BookingNotConnRedisHTTPException(BookingRoomsHTTPException):
+    detail = "Нет связи с redis"
+    status_code = 500
+
 # UTILS
 class TimeValueValidationHTTPException(BookingRoomsHTTPException):
     detail = "Не верно указан промежуток времени"

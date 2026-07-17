@@ -54,6 +54,9 @@ class BookingNotFoundException(BookingRoomsBaseException):
 # CONNECTIONS
 class BookingNotConnDBException(BookingRoomsBaseException):
     detail = "Нет связи с базой данных"
+
+class BookingNotConnRedisException(BookingRoomsBaseException):
+    detail = "Нет связи с redis"
     
 # UTILS
 class TimeValueValidationException(BookingRoomsBaseException):
