@@ -83,10 +83,10 @@ class BookingService(BaseServices):
             user_id=user_id
         )
         try:
-            booking = await self.db.bookings.add(new_booking_data)
-        except BookingRoomsObjUniquessException:
+            booking = await self.db.bookings.create_booking(new_booking_data)
+        except BookingAlreadyBusyException:
             raise BookingAlreadyBusyException
-        except BookingRoomsInvalidObjReferences:
+        except RoomNotFoundException:
             raise RoomNotFoundException
         await self.db.commit()
         return booking
