@@ -81,3 +81,8 @@ class BookingNotFoundHTTPException(BookingRoomsHTTPException):
 class BookingNotConnDBHTTPException(BookingRoomsHTTPException):
     detail = "Нет связи с базой данных"
     status_code = 500
+
+# UTILS
+class TimeSlotValidationHTTPException(BookingRoomsHTTPException):
+    detail = "Не верно указан промежуток времени"
+    status_code = 409

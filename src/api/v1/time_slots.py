@@ -29,7 +29,7 @@ async def create_slots(db: DBDep, time_slots_data: TimeSlotsIn, room_id: int = P
 
     **Возможные ошибки:**
     - `404 Not Found` — комната с указанным ID не найдена.
-    - `409 Conflict` — для этой комнаты уже есть слот на это время.
+    - `409 Conflict` — для этой комнаты уже есть слот на это время или не верные данные времени для слота.
 
     Доступ: admin.
     """
