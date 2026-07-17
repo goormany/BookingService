@@ -5,8 +5,8 @@ from fastapi import APIRouter, Depends, Path
 from src.api.dependencies.db import DBDep
 from src.schemas.time_slots import TimeSlotsIn, TimeSlotsResponse
 from src.services.time_slots import TimeSlotService
-from src.utils.exceptions.exceptions import RoomNotFoundException, TimeSlotNotFoundException, TimeSlotsUniquessException
-from src.utils.exceptions.http_exceptions import RoomNotFoundHTTPException, TimeSlotNotFoundHTTPException, TimeSlotsUniquessHTTPException
+from src.utils.exceptions.exceptions import RoomNotFoundException, TimeSlotNotFoundException, TimeSlotValidationError, TimeSlotsUniquessException
+from src.utils.exceptions.http_exceptions import RoomNotFoundHTTPException, TimeSlotNotFoundHTTPException, TimeSlotValidationHTTPException, TimeSlotsUniquessHTTPException
 from src.api.dependencies.users import get_admin_user
 
 router = APIRouter(prefix="/{room_id}/slots", tags=["Slots"], dependencies=[Depends(get_admin_user)])
@@ -39,6 +39,8 @@ async def create_slots(db: DBDep, time_slots_data: TimeSlotsIn, room_id: int = P
         raise RoomNotFoundHTTPException
     except TimeSlotsUniquessException:
         raise TimeSlotsUniquessHTTPException
+    except TimeSlotValidationError:
+        raise TimeSlotValidationHTTPException
 
 
 @router.delete(
