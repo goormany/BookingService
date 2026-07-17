@@ -13,7 +13,7 @@ class BookingIn(BaseModel):
     
     @field_validator('start_time', 'end_time')
     @classmethod
-    def validate_and_convert_time(cls, v: str) -> str:
+    def validate_and_convert_time(cls, v: str) -> time:
         if not re.match(r'^\d{2}:\d{2}$', v):
             raise ValueError(f'Время должно быть в формате HH:MM, получено {v}')
         
