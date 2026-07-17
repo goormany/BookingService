@@ -10,26 +10,101 @@ from src.api.dependencies.users import get_admin_user, get_employee_user
 
 router = APIRouter(prefix="/rooms", tags=["Rooms"])
 
-@router.get("/", status_code=200, response_model=list[RoomView], dependencies=[Depends(get_employee_user)])
+
+@router.get(
+    "/",
+    status_code=200,
+    response_model=list[RoomView],
+    dependencies=[Depends(get_employee_user)],
+    summary="Получить список всех комнат",
+    response_description="Список комнат с пагинацией",
+)
 async def get_all_rooms(db: DBDep, pd: PaginationDep):
+    """
+    Возвращает список всех переговорных комнат с пагинацией.
+
+    Параметры пагинации:
+    - **page**: Номер страницы (по умолч. 1).
+    - **per_page**: Количество записей на странице (по умолч. 20, макс. 20).
+
+    Доступ: employee, admin.
+    """
     return await RoomService(db).get_all(per_page=pd.per_page, page=pd.page)
 
-@router.post("/", status_code=201, response_model=RoomView, dependencies=[Depends(get_admin_user)])
+
+@router.post(
+    "/",
+    status_code=201,
+    response_model=RoomView,
+    dependencies=[Depends(get_admin_user)],
+    summary="Создать новую комнату",
+    response_description="Данные созданной комнаты",
+)
 async def create_room(db: DBDep, room_data: RoomCreate):
+    """
+    Создаёт новую переговорную комнату.
+
+    - **name**: Название комнаты (обязательно, должно быть уникальным).
+    - **description**: Описание комнаты (необязательно).
+
+    **Возможные ошибки:**
+    - `409 Conflict` — комната с таким названием уже существует.
+
+    Доступ: admin.
+    """
     try:
         return await RoomService(db).create(room_data)
     except RoomUniquessException:
         raise RoomUniquessHTTPException
-    
-@router.get("/{room_id}", status_code=200, response_model=RoomWithSlotsResponse, dependencies=[Depends(get_employee_user)])
+
+
+@router.get(
+    "/{room_id}",
+    status_code=200,
+    response_model=RoomWithSlotsResponse,
+    dependencies=[Depends(get_employee_user)],
+    summary="Получить комнату по ID",
+    response_description="Данные комнаты со списком временных слотов",
+)
 async def get_room_by_id(db: DBDep, room_id: int = Path(ge=0)):
+    """
+    Возвращает комнату по её ID вместе со списком временных слотов.
+
+    - **room_id**: ID комнаты (>= 0).
+
+    **Возможные ошибки:**
+    - `404 Not Found` — комната с указанным ID не найдена.
+
+    Доступ: employee, admin.
+    """
     try:
         return await RoomService(db).get_room_with_slots(room_id)
     except RoomNotFoundException:
         raise RoomNotFoundHTTPException
 
-@router.patch("/{room_id}", status_code=200, response_model=RoomView, dependencies=[Depends(get_admin_user)])
+
+@router.patch(
+    "/{room_id}",
+    status_code=200,
+    response_model=RoomView,
+    dependencies=[Depends(get_admin_user)],
+    summary="Обновить данные комнаты",
+    response_description="Обновлённые данные комнаты",
+)
 async def update_room_by_id(db: DBDep, room_data: RoomUpdate, room_id: int = Path(ge=0)):
+    """
+    Частично обновляет данные комнаты.
+
+    - **room_id**: ID комнаты (>= 0).
+    - **name**: Новое название (необязательно).
+    - **description**: Новое описание (необязательно).
+
+    **Возможные ошибки:**
+    - `404 Not Found` — комната с указанным ID не найдена.
+    - `409 Conflict` — комната с таким названием уже существует.
+
+    Доступ: admin.
+    """
     try:
         return await RoomService(db).update_room(room_data, id=room_id)
     except RoomNotFoundException:
@@ -37,8 +112,26 @@ async def update_room_by_id(db: DBDep, room_data: RoomUpdate, room_id: int = Pat
     except RoomUniquessException:
         raise RoomUniquessHTTPException
 
-@router.delete("/{room_id}", status_code=200, response_model=RoomView, dependencies=[Depends(get_admin_user)])
+
+@router.delete(
+    "/{room_id}",
+    status_code=200,
+    response_model=RoomView,
+    dependencies=[Depends(get_admin_user)],
+    summary="Удалить комнату",
+    response_description="Данные удалённой комнаты",
+)
 async def delete_room_by_id(db: DBDep, room_id: int = Path(ge=0)):
+    """
+    Удаляет комнату по её ID.
+
+    - **room_id**: ID комнаты (>= 0).
+
+    **Возможные ошибки:**
+    - `404 Not Found` — комната с указанным ID не найдена.
+
+    Доступ: admin.
+    """
     try:
         return await RoomService(db).delete_room(id=room_id)
     except RoomNotFoundException:
