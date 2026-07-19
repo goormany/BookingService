@@ -14,7 +14,7 @@ class AuthServices(BaseServices):
     @staticmethod
     def _create_data_for_token(user_id: str) -> dict[str, str]:
         return {
-            "sub": user_id
+            "sub": str(user_id)
         }
     
     @staticmethod
