@@ -289,3 +289,13 @@ class TestDelete:
         assert isinstance(result, str)
         assert result == "map_test_model_1"
         mock_session.execute.assert_called_once()
+
+    async def test_delete_raise_not_found(self, repo, mock_session, args, kwargs):
+        mock_result = MagicMock()
+        mock_result.scalar_one.side_effect = NoResultFound
+        mock_session.execute.return_value = mock_result
+        
+        with pytest.raises(BookingRoomsNotFoundObjException):
+            await repo.delete(*args, **kwargs)
+        
+        mock_session.execute.assert_called_once()
