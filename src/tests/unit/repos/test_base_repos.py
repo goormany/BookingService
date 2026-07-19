@@ -1,6 +1,6 @@
 from unittest.mock import AsyncMock, MagicMock, create_autospec
 
-from asyncpg import UniqueViolationError
+from asyncpg import ForeignKeyViolationError, UniqueViolationError
 from pydantic import BaseModel
 import pytest
 from sqlalchemy import select
@@ -9,7 +9,7 @@ from sqlalchemy.exc import NoResultFound, IntegrityError
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 from src.repos.base import BaseRepository
-from src.utils.exceptions.exceptions import BookingRoomsNotFoundObjException, BookingRoomsObjUniquessException
+from src.utils.exceptions.exceptions import BookingRoomsInvalidObjReferences, BookingRoomsNotFoundObjException, BookingRoomsObjUniquessException
 
 class TestBase(DeclarativeBase):
     pass
@@ -57,7 +57,7 @@ def mock_schema():
 
 @pytest.fixture
 def args():
-    return ("filter_by_name",)
+    return (TestModel.name == "test_name",)
 
 @pytest.fixture
 def kwargs():
@@ -206,5 +206,86 @@ class TestAdd:
         assert result == "map_test_model_1"
         
         mock_session.execute.assert_called_once()
-
     
+    async def test_add_raises_unique_violation(self, repo, mock_session, mock_schema):
+        mock_unique_error = MagicMock()
+        mock_unique_error.__cause__ = MagicMock(spec=UniqueViolationError)
+
+        integrity_error = IntegrityError(
+            statement="stmt",
+            params={},
+            orig=mock_unique_error
+        )
+        integrity_error.orig = mock_unique_error
+        
+        mock_session.execute.side_effect = integrity_error
+        
+        with pytest.raises(BookingRoomsObjUniquessException):
+            await repo.add(mock_schema)
+
+        mock_session.execute.assert_called_once()
+    
+    async def test_add_raises_foreig_key_violation(self, repo, mock_session, mock_schema):
+        mock_error = MagicMock()
+        mock_error.__cause__ = MagicMock(spec=ForeignKeyViolationError)
+        
+        integrity_error = IntegrityError(
+            statement="stmt",
+            params={},
+            orig=mock_error
+        )
+        integrity_error.orig = mock_error
+        
+        mock_session.execute.side_effect = integrity_error
+        
+        with pytest.raises(BookingRoomsInvalidObjReferences):
+            await repo.add(mock_schema)
+
+class TestEdit:
+    async def test_edit_success(self, repo, mock_session, mock_model, mock_schema):
+        mock_result = MagicMock()
+        mock_result.scalar_one.return_value = mock_model
+        mock_session.execute.return_value = mock_result
+        
+        result = await repo.edit(mock_schema)
+        
+        assert isinstance(result, str)
+        assert result == "map_test_model_1"
+        mock_session.execute.assert_called_once()
+    
+    async def test_edit_raises_not_found(self, repo, mock_session, mock_schema):
+        mock_result = MagicMock()
+        mock_result.scalar_one.side_effect = NoResultFound()
+        mock_session.execute.return_value = mock_result
+        
+        with pytest.raises(BookingRoomsNotFoundObjException):
+            await repo.edit(mock_schema)
+        
+        mock_session.execute.assert_called_once()
+    
+    async def test_edit_raises_unique_violation(self, repo, mock_session, mock_schema):
+        mock_error = MagicMock()
+        mock_error.__cause__ = MagicMock(spec=UniqueViolationError)
+        
+        integrity_error = IntegrityError(
+            statement="stmt",
+            params={},
+            orig=mock_error
+        )
+        integrity_error.orig = mock_error
+        
+        mock_session.execute.side_effect = integrity_error
+        
+        with pytest.raises(BookingRoomsObjUniquessException):
+            await repo.edit(mock_schema)
+    
+class TestDelete:
+    async def test_delete_success(self, repo, mock_session, mock_model, args, kwargs):
+        mock_result = MagicMock()
+        mock_result.scalar_one.return_value = mock_model
+        mock_session.execute.return_value = mock_result
+        
+        result = await repo.delete(*args, **kwargs)
+        assert isinstance(result, str)
+        assert result == "map_test_model_1"
+        mock_session.execute.assert_called_once()
