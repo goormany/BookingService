@@ -36,11 +36,6 @@ class TestDataMapper:
         return f"map_{obj}"
 
 @pytest.fixture
-def mock_session() -> AsyncSession:
-    mock_session = create_autospec(AsyncSession)
-    return mock_session
-
-@pytest.fixture
 def repo(mock_session) -> BaseRepository:
     repo = BaseRepository(mock_session)
     repo.mapper = TestDataMapper
@@ -58,10 +53,6 @@ def mock_schema():
 @pytest.fixture
 def args():
     return (TestModel.name == "test_name",)
-
-@pytest.fixture
-def kwargs():
-    return {"id": 1}
 
 class TestGetFiltred:
     async def test_get_filtred_without_pagination(self, repo: BaseRepository, mock_session: AsyncSession):
