@@ -18,6 +18,8 @@ class UserResponse(UserBase):
 
 class UserCreate(UserBase):
     hashed_password: str
+    role: UserRoleEnum = UserRoleEnum.EMPLOYEE
+    
 
 class UserWithHashedPassword(UserResponse, UserCreate):
     pass

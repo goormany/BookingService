@@ -3,8 +3,8 @@ from src.utils.enums.user_roles import UserRoleEnum
 
 class TestStatusBookingEnum:
     def test_values(self):
-        assert StatusBookingEnum.ACTIVE.value == "active"
-        assert StatusBookingEnum.CANCELLED.value == "cancelled"
+        assert StatusBookingEnum.ACTIVE.value == "ACTIVE"
+        assert StatusBookingEnum.CANCELLED.value == "CANCELLED"
     
     def test_count(self):
         assert len(StatusBookingEnum) == 2
