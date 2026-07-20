@@ -1,4 +1,40 @@
 services:
+  app:
+    container_name: booking_rooms_app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: booking_rooms_app:latest
+    environment:
+      MODE: ${MODE}
+      APP_HOST: ${APP_HOST}
+      APP_PORT: ${APP_PORT}
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      JWT_ALGORITHM: ${JWT_ALGORITHM}
+      JWT_ACCESS_TOKEN_EXPIRE_MINUTES: ${JWT_ACCESS_TOKEN_EXPIRE_MINUTES}
+      JWT_REFRESH_TOKEN_EXPIRE_DAYS: ${JWT_REFRESH_TOKEN_EXPIRE_DAYS}
+    ports:
+      - "${APP_PORT:-8000}:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./src:/app/src
+      - ./alembic.ini:/app/alembic.ini
+    restart: unless-stopped
+    networks:
+      - booking_rooms_db_net
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health', timeout=2)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
   db:
     container_name: booking_rooms_db
     image: postgres:15
@@ -14,6 +50,12 @@ services:
     restart: unless-stopped
     networks:
       - booking_rooms_db_net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-root} -d ${DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
 volumes:
   booking_rooms_db_data:
