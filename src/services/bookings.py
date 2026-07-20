@@ -101,6 +101,20 @@ class BookingService(BaseServices):
     async def get_my_bookings(self, per_page: int, page: int, user_id: int) -> list[BookingResponse]:
         return await self.db.bookings.get_filtred(per_page=per_page, page=page, user_id=user_id)
     
+    async def get_bookings_by_room(
+        self,
+        room_id: int,
+        per_page: int | None = None,
+        page: int | None = None,
+        *args, **kwargs
+    ) -> list[BookingResponse]:
+        return await self.db.bookings.get_filtred(
+            per_page=per_page,
+            page=page,
+            room_id=room_id,
+            *args, **kwargs
+        )
+    
     async def soft_delete_booking(self, *args, **kwargs) -> BookingResponse:
         try:
             soft_delete_data = SoftDeleteBooking(status=StatusBookingEnum.CANCELLED)
