@@ -158,3 +158,70 @@ async def test_refresh_token_expired(ac):
     )
     
     assert response.status_code == 401
+
+
+async def test_refresh_token_invalid(ac):
+    response = await ac.post(
+        "/api/v1/auth/refresh",
+        json={
+            "refresh_token": "invalid_token"
+        }
+    )
+    assert response.status_code == 401
+
+
+async def test_register_empty_username(ac):
+    response = await ac.post(
+        "/api/v1/auth/register",
+        json={
+            "username": "",
+            "password": "password123"
+        }
+    )
+    assert response.status_code == 422
+
+
+async def test_register_short_password(ac):
+    response = await ac.post(
+        "/api/v1/auth/register",
+        json={
+            "username": f"user_{hash('short')}",
+            "password": "123"
+        }
+    )
+    assert response.status_code == 422
+
+
+async def test_access_protected_endpoint_without_token(ac):
+    response = await ac.get("/api/v1/users/me")
+    assert response.status_code == 401
+
+
+async def test_access_protected_endpoint_with_invalid_token(ac):
+    response = await ac.get(
+        "/api/v1/users/me",
+        headers={"Authorization": "Bearer invalid.token.here"}
+    )
+    assert response.status_code == 401
+
+
+async def test_login_with_empty_username(ac):
+    response = await ac.post(
+        "/api/v1/auth/login",
+        data={
+            "username": "",
+            "password": "password"
+        }
+    )
+    assert response.status_code == 422
+
+
+async def test_login_with_empty_password(ac):
+    response = await ac.post(
+        "/api/v1/auth/login",
+        data={
+            "username": "admin",
+            "password": ""
+        }
+    )
+    assert response.status_code == 422

@@ -132,3 +132,36 @@ async def test_delete_room_as_employee(admin_ac, employee_ac):
         f"/api/v1/rooms/{room_id}"
     )
     assert response2.status_code == 403
+
+
+async def test_get_room_not_found(employee_ac):
+    response = await employee_ac.get("/api/v1/rooms/99999")
+    assert response.status_code == 404
+
+
+async def test_update_room_not_found(admin_ac):
+    response = await admin_ac.patch(
+        "/api/v1/rooms/99999",
+        json={
+            "description": "new_desc"
+        }
+    )
+    assert response.status_code == 404
+
+
+async def test_delete_room_not_found(admin_ac):
+    response = await admin_ac.delete("/api/v1/rooms/99999")
+    assert response.status_code == 404
+
+
+async def test_create_room_without_name(admin_ac):
+    response = await admin_ac.post(
+        "/api/v1/rooms/",
+        json={}
+    )
+    assert response.status_code == 422
+
+
+async def test_get_rooms_unauthorized(ac):
+    response = await ac.get("/api/v1/rooms/")
+    assert response.status_code == 401

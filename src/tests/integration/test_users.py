@@ -168,3 +168,83 @@ async def test_hard_delete_user_as_employee(employee_ac):
         f"/api/v1/users/{user_id}/hard"
     )
     assert response2.status_code == 403
+
+
+async def test_pagination_users(admin_ac):
+    response = await admin_ac.get("/api/v1/users/?page=1&per_page=10")
+    assert response.status_code == 200
+    data = response.json()
+    assert isinstance(data, list)
+    assert len(data) <= 10
+
+
+async def test_get_user_not_found(admin_ac):
+    response = await admin_ac.get("/api/v1/users/999999")
+    assert response.status_code == 404
+
+
+async def test_change_role_not_found(admin_ac):
+    response = await admin_ac.patch(
+        "/api/v1/users/999999",
+        json={
+            "role": UserRoleEnum.ADMIN
+        }
+    )
+    assert response.status_code == 404
+
+
+async def test_soft_delete_not_found(admin_ac):
+    response = await admin_ac.delete("/api/v1/users/999999")
+    assert response.status_code == 404
+
+
+async def test_hard_delete_not_found(admin_ac):
+    response = await admin_ac.delete("/api/v1/users/999999/hard")
+    assert response.status_code == 404
+
+
+async def test_restore_user_as_admin(admin_ac):
+    username = "test_restore_user"
+    response1 = await admin_ac.post(
+        "/api/v1/auth/register",
+        json={
+            "username": username,
+            "password": "password"
+        }
+    )
+    assert response1.status_code == 201
+    user = response1.json()
+    user_id = user["id"]
+    
+    response2 = await admin_ac.delete(f"/api/v1/users/{user_id}")
+    assert response2.status_code == 200
+    
+    response3 = await admin_ac.patch(f"/api/v1/users/{user_id}/restore")
+    assert response3.status_code == 200
+    restored_user = response3.json()
+    assert restored_user["is_active"] is True
+
+
+async def test_restore_user_as_employee(admin_ac, employee_ac):
+    username = "test_restore_user_employee"
+    response1 = await admin_ac.post(
+        "/api/v1/auth/register",
+        json={
+            "username": username,
+            "password": "password"
+        }
+    )
+    assert response1.status_code == 201
+    user = response1.json()
+    user_id = user["id"]
+    
+    response2 = await admin_ac.delete(f"/api/v1/users/{user_id}")
+    assert response2.status_code == 200
+    
+    response3 = await employee_ac.patch(f"/api/v1/users/{user_id}/restore")
+    assert response3.status_code == 403
+
+
+async def test_restore_nonexistent_user(admin_ac):
+    response = await admin_ac.patch("/api/v1/users/999999/restore")
+    assert response.status_code == 404
