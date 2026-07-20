@@ -1,4 +1,3 @@
-
 from datetime import date, datetime, time
 from unittest.mock import MagicMock
 
@@ -21,23 +20,23 @@ class TestBaseDataMapper:
         mock_orm.end_time = time(11, 0)
         mock_orm.status = StatusBookingEnum.ACTIVE
         mock_orm.created_at = datetime(2026, 7, 18, 10, 0, 0)
-        
+
         class TestMapper(BaseDataMapper):
             db_model = Bookings
             schema = BookingResponse
-        
+
         result = TestMapper.map_to_schema(mock_orm)
         assert isinstance(result, BookingResponse)
         assert result.id == 1
-    
+
     def test_map_to_db_model(self):
         class TestMapper(BaseDataMapper):
             db_model = Rooms
             schema = RoomView
-        
+
         schema = RoomCreate(name="room 1")
         result = TestMapper.map_to_db_model(schema)
-        
+
         assert isinstance(result, Rooms)
         assert result.name == "room 1"
         assert result.description is None

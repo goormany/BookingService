@@ -10,8 +10,7 @@ from src.config import settings
 from src.api import router as api_router
 
 app = FastAPI(
-    debug=settings.IS_DEBUG,
-    title="Сервис бронирования переговорных комнат (API)"
+    debug=settings.IS_DEBUG, title="Сервис бронирования переговорных комнат (API)"
 )
 app.include_router(api_router, prefix="/api")
 
@@ -21,5 +20,5 @@ if __name__ == "__main__":
         "main:app",
         host=settings.APP_HOST,
         port=settings.APP_PORT,
-        reload=settings.IS_DEBUG
+        reload=settings.IS_DEBUG,
     )

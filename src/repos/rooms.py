@@ -25,13 +25,21 @@ class RoomRepository(BaseRepository):
 
         return RoomWithSlotsResponse.model_validate(room, from_attributes=True)
 
-    async def get_all_with_slots(self, per_page: int | None = None, page: int | None = None) -> list[RoomWithSlotsResponse]:
-        query: Select = (
-            select(self.mapper.db_model)
-            .options(selectinload(self.mapper.db_model.slots))
+    async def get_all_with_slots(
+        self, per_page: int | None = None, page: int | None = None
+    ) -> list[RoomWithSlotsResponse]:
+        query: Select = select(self.mapper.db_model).options(
+            selectinload(self.mapper.db_model.slots)
         )
         if page and per_page:
-            query = query.offset((page-1)*per_page).limit(per_page).order_by(self.mapper.db_model.id)
+            query = (
+                query.offset((page - 1) * per_page)
+                .limit(per_page)
+                .order_by(self.mapper.db_model.id)
+            )
         result = await self.session.execute(query)
         rooms = result.scalars().all()
-        return [RoomWithSlotsResponse.model_validate(room, from_attributes=True) for room in rooms]
+        return [
+            RoomWithSlotsResponse.model_validate(room, from_attributes=True)
+            for room in rooms
+        ]

@@ -9,7 +9,10 @@ from src.schemas.rooms import RoomView, RoomWithSlotsResponse, RoomCreate, RoomU
 from src.services.bookings import BookingService
 from src.services.rooms import RoomService
 from src.utils.exceptions.exceptions import RoomNotFoundException, RoomUniquessException
-from src.utils.exceptions.http_exceptions import RoomNotFoundHTTPException, RoomUniquessHTTPException
+from src.utils.exceptions.http_exceptions import (
+    RoomNotFoundHTTPException,
+    RoomUniquessHTTPException,
+)
 from src.api.dependencies.users import get_admin_user, get_employee_user
 
 router = APIRouter(prefix="/rooms", tags=["Rooms"])
@@ -95,7 +98,9 @@ async def get_room_by_id(db: DBDep, room_id: int = Path(ge=0)):
     summary="Обновить данные комнаты",
     response_description="Обновлённые данные комнаты",
 )
-async def update_room_by_id(db: DBDep, room_data: RoomUpdate, room_id: int = Path(ge=0)):
+async def update_room_by_id(
+    db: DBDep, room_data: RoomUpdate, room_id: int = Path(ge=0)
+):
     """
     Частично обновляет данные комнаты.
 
@@ -148,7 +153,7 @@ async def delete_room_by_id(db: DBDep, room_id: int = Path(ge=0)):
     response_model=list[BookingResponse],
     summary="Получить бронирования комнаты",
     response_description="Список бронирований для указанной комнаты",
-    dependencies=[Depends(get_admin_user)]
+    dependencies=[Depends(get_admin_user)],
 )
 async def get_bookings_by_room(
     db: DBDep,

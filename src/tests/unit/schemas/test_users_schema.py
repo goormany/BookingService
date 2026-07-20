@@ -4,6 +4,7 @@ import pytest
 from src.schemas.users import UserIn, UserRoleSchema, UserCreate
 from src.utils.enums.user_roles import UserRoleEnum
 
+
 class TestUserIn:
     def test_valid(self):
         schema = UserIn(username="john", password="secret123")
@@ -20,6 +21,7 @@ class TestUserIn:
         with pytest.raises(ValidationError):
             UserIn(username="john", password=value)
 
+
 class TestUserCreate:
     def test_valid(self):
         schema = UserCreate(username="john", hashed_password="hash123")
@@ -29,6 +31,7 @@ class TestUserCreate:
     def test_empty_username(self):
         with pytest.raises(ValidationError):
             UserCreate(username="", hashed_password="hash123")
+
 
 class TestUserRoleSchema:
     def test_valid_role_admin(self):

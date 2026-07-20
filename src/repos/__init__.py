@@ -10,5 +10,5 @@ __all__ = [
     "RoomRepository",
     "TimeSlotRepository",
     "UserRepository",
-    "HealthRepository"
+    "HealthRepository",
 ]

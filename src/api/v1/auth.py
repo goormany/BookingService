@@ -11,10 +11,17 @@ from src.api.dependencies.db import DBDep
 from src.api.dependencies.auth import RefreshTokenDep
 from src.services.users import UserService
 from src.services.auth import AuthServices
-from src.utils.exceptions.exceptions import UserNotFoundException, UsersUniquessException
-from src.utils.exceptions.http_exceptions import InvalidCredentialsException, UsersUniquessHTTPException
+from src.utils.exceptions.exceptions import (
+    UserNotFoundException,
+    UsersUniquessException,
+)
+from src.utils.exceptions.http_exceptions import (
+    InvalidCredentialsException,
+    UsersUniquessHTTPException,
+)
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
+
 
 @router.post(
     "/register",
@@ -46,7 +53,9 @@ async def create_user(db: DBDep, user_data: UserIn):
     summary="Аутентификация пользователя",
     response_description="JWT access_token и refresh_token",
 )
-async def login_user(db: DBDep, user_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
+async def login_user(
+    db: DBDep, user_data: Annotated[OAuth2PasswordRequestForm, Depends()]
+):
     """
     Принимает `username` и `password`
     Возвращает пару JWT-токенов.
@@ -61,12 +70,16 @@ async def login_user(db: DBDep, user_data: Annotated[OAuth2PasswordRequestForm, 
         user = await UserService(db).get_user_with_password(username=user_data.username)
     except UserNotFoundException:
         raise InvalidCredentialsException
-    
+
     if not AuthServices.verify_password(user_data.password, user.hashed_password):
         raise InvalidCredentialsException
-    
-    jwt_token = AuthServices.create_access_token(str(user.id), timedelta(minutes=settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES))
-    refresh_token = AuthServices.create_access_token(str(user.id), timedelta(days=settings.JWT_REFRESH_TOKEN_EXPIRE_DAYS))
+
+    jwt_token = AuthServices.create_access_token(
+        str(user.id), timedelta(minutes=settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES)
+    )
+    refresh_token = AuthServices.create_access_token(
+        str(user.id), timedelta(days=settings.JWT_REFRESH_TOKEN_EXPIRE_DAYS)
+    )
     return TokenData(access_token=jwt_token, refresh_token=refresh_token)
 
 

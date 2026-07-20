@@ -29,27 +29,33 @@ class TestStripNotEmpty:
 
 
 class TestValidateAndConvertTime:
-    @pytest.mark.parametrize("time_str,expected", [
-        ("00:00", time(0, 0, tzinfo=timezone.utc)),
-        ("06:00", time(6, 0, tzinfo=timezone.utc)),
-        ("12:30", time(12, 30, tzinfo=timezone.utc)),
-        ("23:59", time(23, 59, tzinfo=timezone.utc)),
-    ])
+    @pytest.mark.parametrize(
+        "time_str,expected",
+        [
+            ("00:00", time(0, 0, tzinfo=timezone.utc)),
+            ("06:00", time(6, 0, tzinfo=timezone.utc)),
+            ("12:30", time(12, 30, tzinfo=timezone.utc)),
+            ("23:59", time(23, 59, tzinfo=timezone.utc)),
+        ],
+    )
     def test_valid_time(self, time_str, expected):
         result = validate_and_convert_time(time_str)
         assert result == expected
 
-    @pytest.mark.parametrize("invalid_time", [
-        "6:00",
-        "24:00",
-        "-1:00",
-        "12:60",
-        "abc",
-        "12:00:00",
-        "",
-        "25:00",
-        "00:60",
-    ])
+    @pytest.mark.parametrize(
+        "invalid_time",
+        [
+            "6:00",
+            "24:00",
+            "-1:00",
+            "12:60",
+            "abc",
+            "12:00:00",
+            "",
+            "25:00",
+            "00:60",
+        ],
+    )
     def test_invalid_time_raises(self, invalid_time):
         with pytest.raises(ValueError):
             validate_and_convert_time(invalid_time)

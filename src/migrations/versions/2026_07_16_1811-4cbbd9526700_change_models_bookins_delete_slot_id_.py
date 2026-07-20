@@ -39,18 +39,14 @@ def upgrade() -> None:
         unique=True,
         postgresql_where=sa.text("status = 'ACTIVE'"),
     )
-    op.drop_constraint(
-        op.f("bookings_slot_id_fkey"), "bookings", type_="foreignkey"
-    )
+    op.drop_constraint(op.f("bookings_slot_id_fkey"), "bookings", type_="foreignkey")
     op.drop_column("bookings", "slot_id")
 
 
 def downgrade() -> None:
     op.add_column(
         "bookings",
-        sa.Column(
-            "slot_id", sa.INTEGER(), autoincrement=False, nullable=False
-        ),
+        sa.Column("slot_id", sa.INTEGER(), autoincrement=False, nullable=False),
     )
     op.create_foreign_key(
         op.f("bookings_slot_id_fkey"),

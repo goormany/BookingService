@@ -82,7 +82,9 @@ async def get_user_by_id(db: DBDep, user_id: Annotated[int, Path(ge=0)]):
     summary="Изменить роль пользователя",
     response_description="Обновлённые данные пользователя",
 )
-async def change_user_role(db: DBDep, user_id: Annotated[int, Path(ge=0)], role: UserRoleSchema):
+async def change_user_role(
+    db: DBDep, user_id: Annotated[int, Path(ge=0)], role: UserRoleSchema
+):
     """
     Изменяет роль пользователя.
 

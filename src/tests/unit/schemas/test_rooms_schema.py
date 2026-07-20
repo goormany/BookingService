@@ -3,6 +3,7 @@ from pydantic import ValidationError
 
 from src.schemas.rooms import RoomCreate, RoomUpdate
 
+
 class TestRoomCreate:
     def test_required_name(self):
         room = RoomCreate(name="room 1")
@@ -17,6 +18,7 @@ class TestRoomCreate:
     def test_invalid_empty_name(self, value):
         with pytest.raises(ValidationError):
             RoomCreate(name=value)
+
 
 class TestRoomUpdate:
     def test_all_optional(self):

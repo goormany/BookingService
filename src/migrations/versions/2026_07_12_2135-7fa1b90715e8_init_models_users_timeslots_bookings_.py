@@ -51,9 +51,7 @@ def upgrade() -> None:
         ),
         sa.PrimaryKeyConstraint("id"),
     )
-    op.create_index(
-        op.f("ix_users_username"), "users", ["username"], unique=True
-    )
+    op.create_index(op.f("ix_users_username"), "users", ["username"], unique=True)
     op.create_table(
         "timeslots",
         sa.Column("room_id", sa.Integer(), nullable=False),
@@ -94,9 +92,7 @@ def upgrade() -> None:
             nullable=False,
         ),
         sa.ForeignKeyConstraint(["room_id"], ["rooms.id"], ondelete="CASCADE"),
-        sa.ForeignKeyConstraint(
-            ["slot_id"], ["timeslots.id"], ondelete="CASCADE"
-        ),
+        sa.ForeignKeyConstraint(["slot_id"], ["timeslots.id"], ondelete="CASCADE"),
         sa.ForeignKeyConstraint(["user_id"], ["users.id"], ondelete="CASCADE"),
         sa.PrimaryKeyConstraint("id"),
     )

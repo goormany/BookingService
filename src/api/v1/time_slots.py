@@ -5,11 +5,23 @@ from fastapi import APIRouter, Depends, Path
 from src.api.dependencies.db import DBDep
 from src.schemas.time_slots import TimeSlotsIn, TimeSlotsResponse
 from src.services.time_slots import TimeSlotService
-from src.utils.exceptions.exceptions import RoomNotFoundException, TimeSlotNotFoundException, TimeValueValidationException, TimeSlotsUniquessException
-from src.utils.exceptions.http_exceptions import RoomNotFoundHTTPException, TimeSlotNotFoundHTTPException, TimeValueValidationHTTPException, TimeSlotsUniquessHTTPException
+from src.utils.exceptions.exceptions import (
+    RoomNotFoundException,
+    TimeSlotNotFoundException,
+    TimeValueValidationException,
+    TimeSlotsUniquessException,
+)
+from src.utils.exceptions.http_exceptions import (
+    RoomNotFoundHTTPException,
+    TimeSlotNotFoundHTTPException,
+    TimeValueValidationHTTPException,
+    TimeSlotsUniquessHTTPException,
+)
 from src.api.dependencies.users import get_admin_user
 
-router = APIRouter(prefix="/{room_id}/slots", tags=["Slots"], dependencies=[Depends(get_admin_user)])
+router = APIRouter(
+    prefix="/{room_id}/slots", tags=["Slots"], dependencies=[Depends(get_admin_user)]
+)
 
 
 @router.post(
@@ -19,7 +31,9 @@ router = APIRouter(prefix="/{room_id}/slots", tags=["Slots"], dependencies=[Depe
     summary="Создать временной слот для комнаты",
     response_description="Данные созданного временного слота",
 )
-async def create_slots(db: DBDep, time_slots_data: TimeSlotsIn, room_id: int = Path(ge=0)):
+async def create_slots(
+    db: DBDep, time_slots_data: TimeSlotsIn, room_id: int = Path(ge=0)
+):
     """
     Создаёт временной слот (расписание) для указанной комнаты.
 
@@ -50,7 +64,9 @@ async def create_slots(db: DBDep, time_slots_data: TimeSlotsIn, room_id: int = P
     summary="Удалить временной слот",
     response_description="Данные удалённого временного слота",
 )
-async def delete_slot_by_id(db: DBDep, room_id: Annotated[int, Path(ge=0)], slot_id: Annotated[int, Path(ge=0)]):
+async def delete_slot_by_id(
+    db: DBDep, room_id: Annotated[int, Path(ge=0)], slot_id: Annotated[int, Path(ge=0)]
+):
     """
     Удаляет временной слот по его ID.
 
