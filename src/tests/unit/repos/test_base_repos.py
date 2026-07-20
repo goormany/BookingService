@@ -1,4 +1,4 @@
-from unittest.mock import AsyncMock, MagicMock, create_autospec
+from unittest.mock import AsyncMock, MagicMock
 
 from asyncpg import ForeignKeyViolationError, UniqueViolationError
 from pydantic import BaseModel

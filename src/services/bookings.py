@@ -3,7 +3,7 @@ from datetime import date, time
 from src.schemas.bookings import AvailabilityResponse, BookingCreate, BookingIn, BookingResponse, FreeInterval, RoomAvailability, SoftDeleteBooking
 from src.services.base import BaseServices
 from src.utils.enums.status_bookings import StatusBookingEnum
-from src.utils.exceptions.exceptions import BookingAlreadyBusyException, BookingNotFoundException, BookingRoomsInvalidObjReferences, BookingRoomsNotFoundObjException, BookingRoomsObjUniquessException, RoomNotFoundException, TimeValueValidationException
+from src.utils.exceptions.exceptions import BookingAlreadyBusyException, BookingNotFoundException, BookingRoomsNotFoundObjException, RoomNotFoundException, TimeValueValidationException
 
 class BookingService(BaseServices):
     def _compute_free_slots(

@@ -4,7 +4,6 @@ from unittest.mock import MagicMock
 import pytest
 from sqlalchemy.exc import NoResultFound
 
-from src.data_mappers.rooms import RoomDataMapper
 from src.repos.rooms import RoomRepository
 from src.models.rooms import Rooms
 from src.schemas.rooms import RoomWithSlotsResponse

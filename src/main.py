@@ -1,6 +1,5 @@
 import sys
 from pathlib import Path
-from contextlib import asynccontextmanager
 
 import uvicorn
 from fastapi import FastAPI

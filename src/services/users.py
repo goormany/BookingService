@@ -1,4 +1,4 @@
-from src.schemas.users import UserCreate, UserIn, UserResponse, UserCreate, UserRoleSchema, UserWithHashedPassword
+from src.schemas.users import UserIn, UserResponse, UserCreate, UserRoleSchema, UserWithHashedPassword
 from src.services.base import BaseServices
 from src.services.auth import AuthServices
 from src.utils.exceptions.exceptions import BookingRoomsNotFoundObjException, BookingRoomsObjUniquessException, UserNotFoundException, UsersUniquessException

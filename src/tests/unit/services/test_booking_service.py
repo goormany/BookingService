@@ -3,7 +3,7 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
-from src.schemas.bookings import AvailabilityResponse, BookingIn, BookingResponse, FreeInterval
+from src.schemas.bookings import AvailabilityResponse, BookingIn, FreeInterval
 from src.schemas.time_slots import TimeSlotsResponse
 from src.services.bookings import BookingService
 from src.schemas.rooms import RoomWithSlotsResponse

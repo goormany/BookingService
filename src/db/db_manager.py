@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.repos import * # noqa
+from src.repos import UserRepository, BookingRepository, TimeSlotRepository, RoomRepository, HealthRepository
 
 class DBManager:
     def __init__(self, session_maker):

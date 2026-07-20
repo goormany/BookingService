@@ -7,7 +7,6 @@ from src.services.users import UserService
 from src.api.dependencies.db import DBDep
 from src.api.dependencies.users import CurUserDep, get_admin_user
 from src.api.dependencies.paginations import PaginationDep
-from src.utils.enums.user_roles import UserRoleEnum
 from src.utils.exceptions.exceptions import UserNotFoundException
 from src.utils.exceptions.http_exceptions import UserNotFoundHTTPException
 

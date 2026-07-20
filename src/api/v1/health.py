@@ -2,8 +2,8 @@ from fastapi import APIRouter
 
 from src.api.dependencies.db import DBDep
 from src.services.health import HealthService
-from src.utils.exceptions.exceptions import BookingNotConnDBException, BookingNotConnRedisException
-from src.utils.exceptions.http_exceptions import BookingNotConnDBHTTPException, BookingNotConnRedisHTTPException
+from src.utils.exceptions.exceptions import BookingNotConnDBException
+from src.utils.exceptions.http_exceptions import BookingNotConnDBHTTPException
 
 router = APIRouter(prefix="/health", tags=["Health"])
 

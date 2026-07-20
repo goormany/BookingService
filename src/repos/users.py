@@ -1,4 +1,4 @@
-from sqlalchemy import select, update
+from sqlalchemy import update
 from sqlalchemy.exc import NoResultFound
 
 from src.repos.base import BaseRepository

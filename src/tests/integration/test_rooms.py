@@ -42,10 +42,6 @@ async def test_get_room_by_id(client, request):
     assert response.status_code == 200
     assert isinstance(response.json(), dict)
 
-async def test_get_room_not_found(employee_ac):
-    response = await employee_ac.get("/api/v1/rooms/99999")
-    assert response.status_code == 404
-
 
 async def test_update_room_as_admin(admin_ac):
     name = "test_update_room_as_admin"

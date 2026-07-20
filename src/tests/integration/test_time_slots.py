@@ -1,4 +1,3 @@
-import pytest
 
 
 async def test_create_slot_as_admin(admin_ac):

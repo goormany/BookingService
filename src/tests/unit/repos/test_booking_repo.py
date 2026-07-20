@@ -1,8 +1,7 @@
 from datetime import date, time
-from unittest.mock import AsyncMock, MagicMock, create_autospec
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.repos.bookings import BookingRepository
 from src.data_mappers.bookings import BookingDataMapper

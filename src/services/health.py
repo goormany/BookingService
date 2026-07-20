@@ -1,5 +1,5 @@
 from src.services.base import BaseServices
-from src.utils.exceptions.exceptions import BookingNotConnDBException, BookingNotConnRedisException
+from src.utils.exceptions.exceptions import BookingNotConnDBException
 
 class HealthService(BaseServices):
     async def check(self) -> bool:

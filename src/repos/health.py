@@ -1,8 +1,7 @@
 from sqlalchemy import select
-from redis.exceptions import ConnectionError
 
 from src.repos.base import BaseRepository
-from src.utils.exceptions.exceptions import BookingNotConnDBException, BookingNotConnRedisException
+from src.utils.exceptions.exceptions import BookingNotConnDBException
 
 class HealthRepository(BaseRepository):
     async def check_connect_db(self) -> bool:

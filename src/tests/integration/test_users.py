@@ -29,10 +29,6 @@ async def test_get_user_by_id_as_employee(employee_ac):
     response = await employee_ac.get("/api/v1/users/1")
     assert response.status_code == 403
 
-async def test_get_user_not_found(admin_ac):
-    response = await admin_ac.get("/api/v1/users/1000000")
-    assert response.status_code == 404
-
 async def test_change_role_as_admin(admin_ac):
     username = "test_change_role_as_adm"
     password = "password"

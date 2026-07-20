@@ -8,11 +8,11 @@ from src.schemas.users import UserResponse, UserIn
 from src.schemas.auth import TokenData
 from src.config import settings
 from src.api.dependencies.db import DBDep
-from src.api.dependencies.auth import RefreshTokenDep, tokenDep
+from src.api.dependencies.auth import RefreshTokenDep
 from src.services.users import UserService
 from src.services.auth import AuthServices
-from src.utils.exceptions.exceptions import ExpiredJWTTokenException, InvalidTokenDecodedException, UserNotFoundException, UsersUniquessException
-from src.utils.exceptions.http_exceptions import InvalidCredentialsException, UnauthorizedHTTPException, UsersUniquessHTTPException
+from src.utils.exceptions.exceptions import UserNotFoundException, UsersUniquessException
+from src.utils.exceptions.http_exceptions import InvalidCredentialsException, UsersUniquessHTTPException
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 

@@ -1,7 +1,7 @@
 from datetime import date
 from typing import Annotated
 
-from fastapi import APIRouter, Body, Depends, Path, Query
+from fastapi import APIRouter, Depends, Path, Query
 
 from src.api.dependencies.db import DBDep
 from src.schemas.bookings import AvailabilityResponse, BookingIn, BookingResponse, RoomAvailability
@@ -10,7 +10,7 @@ from src.api.dependencies.paginations import PaginationDep
 from src.utils.enums.status_bookings import StatusBookingEnum
 from src.utils.exceptions.exceptions import BookingAlreadyBusyException, BookingNotFoundException, RoomNotFoundException, TimeValueValidationException
 from src.utils.exceptions.http_exceptions import BookingAlreadyBusyHTTPException, BookingNotFoundHTTPException, RoomNotFoundHTTPException, TimeValueValidationHTTPException
-from src.api.dependencies.users import get_employee_user, get_admin_user, EmployeeDep, AdminDep
+from src.api.dependencies.users import get_employee_user, get_admin_user, EmployeeDep
 
 router = APIRouter(prefix="/bookings", tags=["Bookings"])
 

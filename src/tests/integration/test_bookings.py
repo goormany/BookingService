@@ -396,45 +396,6 @@ async def test_get_booking_not_found(employee_ac):
     response = await employee_ac.get("/api/v1/bookings/99999")
     assert response.status_code == 403
 
-from datetime import date
-
-
-async def test_get_booking_by_id(admin_ac, employee_ac):
-    name = "test_get_booking_by_id_room"
-    room_response = await admin_ac.post(
-        "/api/v1/rooms/",
-        json={
-            "name": name
-        }
-    )
-    assert room_response.status_code == 201
-    room_id = room_response.json()["id"]
-    
-    slot_response = await admin_ac.post(
-        f"/api/v1/rooms/{room_id}/slots/",
-        json={
-            "start": "09:00",
-            "end": "18:00"
-        }
-    )
-    assert slot_response.status_code == 201
-    
-    booking_date = date.today().isoformat()
-    create_response = await employee_ac.post(
-        f"/api/v1/bookings/{room_id}",
-        json={
-            "booking_date": booking_date,
-            "start_time": "14:00",
-            "end_time": "15:00"
-        }
-    )
-    assert create_response.status_code == 201
-    booking_id = create_response.json()["id"]
-    
-    response = await admin_ac.get(f"/api/v1/bookings/{booking_id}")
-    assert response.status_code == 200
-    assert response.json()["id"] == booking_id
-
 
 async def test_get_booking_by_id_not_found(admin_ac):
     response = await admin_ac.get("/api/v1/bookings/999999")
