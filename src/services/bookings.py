@@ -115,6 +115,15 @@ class BookingService(BaseServices):
             *args, **kwargs
         )
     
+    async def get_booking_by_id(
+        self,
+        id: int,
+    ) -> BookingResponse:
+        try:
+            return await self.db.bookings.get_one(id=id)
+        except BookingRoomsNotFoundObjException:
+            raise BookingNotFoundException
+    
     async def soft_delete_booking(self, *args, **kwargs) -> BookingResponse:
         try:
             soft_delete_data = SoftDeleteBooking(status=StatusBookingEnum.CANCELLED)

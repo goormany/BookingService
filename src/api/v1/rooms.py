@@ -1,8 +1,12 @@
+from typing import Annotated
+
 from fastapi import APIRouter, Depends, Path
 
 from src.api.dependencies.db import DBDep
 from src.api.dependencies.paginations import PaginationDep
+from src.schemas.bookings import BookingResponse
 from src.schemas.rooms import RoomView, RoomWithSlotsResponse, RoomCreate, RoomUpdate
+from src.services.bookings import BookingService
 from src.services.rooms import RoomService
 from src.utils.exceptions.exceptions import RoomNotFoundException, RoomUniquessException
 from src.utils.exceptions.http_exceptions import RoomNotFoundHTTPException, RoomUniquessHTTPException
@@ -136,3 +140,32 @@ async def delete_room_by_id(db: DBDep, room_id: int = Path(ge=0)):
         return await RoomService(db).delete_room(id=room_id)
     except RoomNotFoundException:
         raise RoomNotFoundHTTPException
+
+
+@router.get(
+    "/{room_id}/bookings",
+    status_code=200,
+    response_model=list[BookingResponse],
+    summary="Получить бронирования комнаты",
+    response_description="Список бронирований для указанной комнаты",
+    dependencies=[Depends(get_admin_user)]
+)
+async def get_bookings_by_room(
+    db: DBDep,
+    room_id: Annotated[int, Path(ge=0)],
+    pd: PaginationDep,
+):
+    """
+    Возвращает список бронирований для комнаты с пагинацией.
+
+    - **room_id**: ID комнаты (>= 0).
+    - **page**: Номер страницы (по умолч. 1).
+    - **per_page**: Количество записей на странице (по умолч. 20, макс. 20).
+
+    Доступ: admin.
+    """
+    return await BookingService(db).get_bookings_by_room(
+        room_id=room_id,
+        per_page=pd.per_page,
+        page=pd.page,
+    )

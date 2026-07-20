@@ -154,7 +154,7 @@ async def get_my_bookings(db: DBDep, user: EmployeeDep, pd: PaginationDep):
     summary="Получить свои бронирования",
     response_description="Список бронирований текущего пользователя с пагинацией",
 )
-async def get_my_bookings(db: DBDep, user: EmployeeDep, pd: PaginationDep, room_id: Annotated[int, Path(ge=0)]):
+async def get_my_bookings_by_room_id(db: DBDep, user: EmployeeDep, pd: PaginationDep, room_id: Annotated[int, Path(ge=0)]):
     """
     Возвращает бронирование по комнате текущего пользователя с пагинацией.
     
@@ -222,29 +222,25 @@ async def get_availability_by_date_and_room(db: DBDep, room_id: int = Path(ge=0)
         raise RoomNotFoundHTTPException
     
 @router.get(
-    "/{room_id}",
+    "/{booking_id}",
     status_code=200,
-    response_model=list[BookingResponse],
-    summary="Получить бронирования комнаты",
-    response_description="Список бронирований для указанной комнаты (свои или все для админа)",
+    response_model=BookingResponse,
+    summary="Получить бронирование комнаты по ID",
+    response_description="Бронирований для указанной комнаты",
     dependencies=[Depends(get_admin_user)]
 )
-async def get_bookings_by_room(
+async def get_booking_by_id(
     db: DBDep,
-    room_id: Annotated[int, Path(ge=0)],
-    pd: PaginationDep,
+    booking_id: Annotated[int, Path(ge=0)],
 ):
     """
-    Возвращает список бронирований для комнаты с пагинацией.
+    Возвращает конкретное бронирование комнаты.
 
-    - **room_id**: ID комнаты (>= 0).
-    - **page**: Номер страницы (по умолч. 1).
-    - **per_page**: Количество записей на странице (по умолч. 20, макс. 20).
+    - **booking_id**: ID бронирования (>= 0).
 
     Доступ: admin.
     """
-    return await BookingService(db).get_bookings_by_room(
-        room_id=room_id,
-        per_page=pd.per_page,
-        page=pd.page,
-    )
+    try:
+        return await BookingService(db).get_booking_by_id(id=booking_id)
+    except BookingNotFoundException:
+        raise BookingNotFoundHTTPException
