@@ -288,8 +288,14 @@ poetry run alembic upgrade head
 
 ### Создание администратора
 
+Локальный запуск
 ```bash
 poetry run python3 -m src.scripts.create_admin
+```
+
+Запуск в Docker
+``` bash
+docker compose exec -it app python3 -m src.scripts.create_admin
 ```
 
 ## Проверка запуска
