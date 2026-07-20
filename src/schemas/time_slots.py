@@ -1,8 +1,8 @@
-from datetime import datetime, time, timezone
-import re
+from datetime import datetime, time
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from src.schemas.validators import validate_and_convert_time
 from src.utils.exceptions.exceptions import TimeValueValidationException
 
 
@@ -12,15 +12,8 @@ class TimeSlotsIn(BaseModel):
     
     @field_validator('start', 'end')
     @classmethod
-    def validate_and_convert_time(cls, v: str) -> time:
-        if not re.match(r'^\d{2}:\d{2}$', v):
-            raise ValueError(f'Время должно быть в формате HH:MM, получено {v}')
-        
-        hours, minutes = map(int, v.split(':'))
-        if hours < 0 or hours > 23 or minutes < 0 or minutes > 59:
-            raise ValueError(f'Неверное время: {v}')
-        
-        return time(hours, minutes, tzinfo=timezone.utc)
+    def validate_time(cls, v: str) -> time:
+        return validate_and_convert_time(v)
 
 class TimeSlotsCreate(BaseModel):
     start: time

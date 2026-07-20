@@ -13,7 +13,7 @@ class TestBookingIn:
         ("12:30", time(12, 30, tzinfo=timezone.utc)),
     ])
     def test_valid_time_format(self, time_str, expected):
-        data = {"booking_date": "2026-07-18", "start_time": time_str, "end_time": "14:00"}
+        data = {"booking_date": date.today().isoformat(), "start_time": time_str, "end_time": "14:00"}
         booking = BookingIn(**data)
         assert booking.start_time == expected
 
@@ -22,6 +22,11 @@ class TestBookingIn:
     ])
     def test_invalid_time_format(self, invalid_time):
         data = {"booking_date": "2026-07-18", "start_time": invalid_time, "end_time": "14:00"}
+        with pytest.raises(ValueError):
+            BookingIn(**data)
+    
+    def test_invalid_date_in_past(self):
+        data = {"booking_date": "2020-01-01", "start_time": "10:00", "end_time": "12:00"}
         with pytest.raises(ValueError):
             BookingIn(**data)
     

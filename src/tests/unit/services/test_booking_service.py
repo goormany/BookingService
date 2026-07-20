@@ -177,7 +177,7 @@ class TestCreateBooking:
     @pytest.fixture
     def booking_in(self):
         return BookingIn(
-            booking_date=date(2026, 7, 19),
+            booking_date=date.today(),
             start_time="12:00",
             end_time="15:00"
         )

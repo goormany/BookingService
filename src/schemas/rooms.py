@@ -1,21 +1,26 @@
 from datetime import datetime
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from src.schemas.time_slots import TimeSlotsResponse
+from src.schemas.validators import NonEmptyStr
 
-class RoomCreate(BaseModel):
-    name: str
+class RoomBase(BaseModel):
+    name: NonEmptyStr
     description: str | None = None
-    
-class RoomView(RoomCreate):
+
+class RoomCreate(RoomBase):
+    pass
+
+class RoomView(RoomBase):
     id: int
     created_at: datetime
 
-class RoomUpdate(RoomCreate):
-    name: str | None = None
+class RoomUpdate(RoomBase):
+    name: NonEmptyStr | None = None
+    description: str | None = None
     
-class RoomWithSlotsResponse(RoomCreate):
+class RoomWithSlotsResponse(RoomBase):
     id: int
     slots: list[TimeSlotsResponse]
     

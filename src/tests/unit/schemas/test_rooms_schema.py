@@ -1,3 +1,6 @@
+import pytest
+from pydantic import ValidationError
+
 from src.schemas.rooms import RoomCreate, RoomUpdate
 
 class TestRoomCreate:
@@ -10,6 +13,11 @@ class TestRoomCreate:
         room = RoomCreate(name="room 1", description="big room")
         assert room.description == "big room"
 
+    @pytest.mark.parametrize("value", ["", "   "])
+    def test_invalid_empty_name(self, value):
+        with pytest.raises(ValidationError):
+            RoomCreate(name=value)
+
 class TestRoomUpdate:
     def test_all_optional(self):
         room = RoomUpdate()
@@ -20,3 +28,8 @@ class TestRoomUpdate:
         room = RoomUpdate(name="backrooms")
         assert room.name == "backrooms"
         assert room.description is None
+
+    @pytest.mark.parametrize("value", ["", "   "])
+    def test_invalid_empty_name(self, value):
+        with pytest.raises(ValidationError):
+            RoomUpdate(name=value)

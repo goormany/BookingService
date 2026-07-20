@@ -1,8 +1,8 @@
-from datetime import date, datetime, time, timezone
-import re
+from datetime import date, datetime, time
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from src.schemas.validators import validate_and_convert_time, validate_booking_date_not_in_past
 from src.utils.enums.status_bookings import StatusBookingEnum
 from src.utils.exceptions.exceptions import TimeValueValidationException
 
@@ -13,15 +13,13 @@ class BookingIn(BaseModel):
     
     @field_validator('start_time', 'end_time')
     @classmethod
-    def validate_and_convert_time(cls, v: str) -> time:
-        if not re.match(r'^\d{2}:\d{2}$', v):
-            raise ValueError(f'Время должно быть в формате HH:MM, получено {v}')
-        
-        hours, minutes = map(int, v.split(':'))
-        if hours < 0 or hours > 23 or minutes < 0 or minutes > 59:
-            raise ValueError(f'Неверное время: {v}')
-        
-        return time(hours, minutes, tzinfo=timezone.utc)
+    def validate_time(cls, v: str) -> time:
+        return validate_and_convert_time(v)
+    
+    @field_validator('booking_date')
+    @classmethod
+    def validate_date_not_in_past(cls, v: date) -> date:
+        return validate_booking_date_not_in_past(v)
 
 class FreeInterval(BaseModel):
     start_time: time

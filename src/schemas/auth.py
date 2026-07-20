@@ -1,10 +1,12 @@
 from pydantic import BaseModel
 
+from src.schemas.validators import NonEmptyStr
+
 class RefreshTokenRequest(BaseModel):
-    refresh_token: str
+    refresh_token: NonEmptyStr
 
 class TokenData(RefreshTokenRequest):
-    access_token: str
+    access_token: NonEmptyStr
     token_type: str | None = "bearer"
 
 class JWTData(BaseModel):

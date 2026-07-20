@@ -2,13 +2,14 @@ from datetime import datetime
 
 from pydantic import BaseModel
 
+from src.schemas.validators import NonEmptyStr
 from src.utils.enums.user_roles import UserRoleEnum
 
 class UserBase(BaseModel):
-    username: str
+    username: NonEmptyStr
 
 class UserIn(UserBase):
-    password: str
+    password: NonEmptyStr
 
 class UserResponse(UserBase):
     id: int
@@ -16,13 +17,13 @@ class UserResponse(UserBase):
     created_at: datetime
     is_active: bool
 
-class UserCreate(UserBase):
+class UserCreate(BaseModel):
+    username: NonEmptyStr
     hashed_password: str
     role: UserRoleEnum = UserRoleEnum.EMPLOYEE
-    
 
-class UserWithHashedPassword(UserResponse, UserCreate):
-    pass
+class UserWithHashedPassword(UserResponse):
+    hashed_password: str
 
 class UserRoleSchema(BaseModel):
     role: UserRoleEnum
