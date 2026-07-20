@@ -56,10 +56,13 @@ src/
 2. **Настройте переменные окружения**
    ```bash
    cp .env.example .env
-   cp .env.example .env.test - для тестов
    ```
    При необходимости отредактируйте `.env`, особенно секретный ключ JWT.
-   При измненении названия тестовой БД в `.env.test` следует изменить и в `init-db.sh`. Этот файл создает вторую БД для тестов
+   Для тестов создайте файл `.env.test`:
+   ```bash
+   cp .env.example .env.test
+   ```
+   В `.env.test` укажите другое имя базы данных (например, `booking_rooms_test_db`).
 
 3. **Запустите сервис и базу данных**
    ```bash
@@ -264,6 +267,8 @@ curl "http://localhost:8000/api/v1/bookings/" \
 
 #### Локально
 
+Убедитесь, что запущена тестовая БД с данными из `.env.test`
+
 ```bash
 poetry run pytest src/tests/unit
 poetry run pytest src/tests/integration
@@ -272,7 +277,7 @@ poetry run pytest src/tests/integration
 #### В Docker
 
 ```bash
-docker compose --env-file .env.test run --rm app pytest -v
+docker compose --env-file .env.test -f docker-compose.test.yml run --rm app pytest -v
 ```
 
 ### Создание миграции
@@ -324,7 +329,7 @@ docker compose exec -it app python3 -m src.scripts.create_admin
 
 1. Запустите:
    ```bash
-   docker compose --env-file .env up --build
+   docker compose up --build
    ```
 2. Дождитесь запуска контейнеров (healthcheck должен проходить):
    ```bash

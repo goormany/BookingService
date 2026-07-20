@@ -1,0 +1,50 @@
+services:
+  app:
+    container_name: booking_rooms_app_test
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: booking_rooms_app:test
+    env_file:
+      - .env.test
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./src:/app/src
+      - ./alembic.ini:/app/alembic.ini
+      - ./pytest.ini:/app/pytest.ini
+    restart: "no"
+    networks:
+      - booking_rooms_test_net
+    command: >
+      sh -c "pytest -v src/tests/"
+
+  db:
+    container_name: booking_rooms_db_test
+    image: postgres:15
+    env_file:
+      - .env.test
+    environment:
+      POSTGRES_USER: ${DB_USER:-root}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-root}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "${POSTGRES_PORT:-5433}:5432"
+    volumes:
+      - booking_rooms_test_db_data:/var/lib/postgresql/data
+    restart: "no"
+    networks:
+      - booking_rooms_test_net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-root} -d ${DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+
+volumes:
+  booking_rooms_test_db_data:
+
+networks:
+  booking_rooms_test_net:
