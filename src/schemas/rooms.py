@@ -6,7 +6,7 @@ from src.schemas.time_slots import TimeSlotsResponse
 from src.schemas.validators import NonEmptyStr
 
 class RoomBase(BaseModel):
-    name: NonEmptyStr
+    name: NonEmptyStr = Field(min_length=4)
     description: str | None = None
 
 class RoomCreate(RoomBase):
@@ -17,7 +17,7 @@ class RoomView(RoomBase):
     created_at: datetime
 
 class RoomUpdate(RoomBase):
-    name: NonEmptyStr | None = None
+    name: NonEmptyStr | None = Field(None, min_length=4)
     description: str | None = None
     
 class RoomWithSlotsResponse(RoomBase):

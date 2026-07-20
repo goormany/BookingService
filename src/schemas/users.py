@@ -1,15 +1,15 @@
 from datetime import datetime
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from src.schemas.validators import NonEmptyStr
 from src.utils.enums.user_roles import UserRoleEnum
 
 class UserBase(BaseModel):
-    username: NonEmptyStr
+    username: NonEmptyStr = Field(min_length=4)
 
 class UserIn(UserBase):
-    password: NonEmptyStr
+    password: NonEmptyStr = Field(min_length=4)
 
 class UserResponse(UserBase):
     id: int
