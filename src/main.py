@@ -11,15 +11,18 @@ from src.config import settings
 from src.api import router as api_router
 from src.connectors.setup import redis_manager
 
+
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     await redis_manager.connect()
     yield
     await redis_manager.close()
 
+
 app = FastAPI(
-    debug=settings.IS_DEBUG, title="Сервис бронирования переговорных комнат (API)",
-    lifespan=lifespan
+    debug=settings.IS_DEBUG,
+    title="Сервис бронирования переговорных комнат (API)",
+    lifespan=lifespan,
 )
 app.include_router(api_router, prefix="/api")
 

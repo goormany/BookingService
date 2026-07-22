@@ -90,8 +90,8 @@ async def create_booking(
     - **end_time**: Время окончания (HH:MM).
 
     **Возможные ошибки:**
-    - `409 Conflict` — комната уже забронирована на это время или не верно указано время.
-    - `404 Not Found` — комната с указанным ID не найдена.
+    - `409 Conflict` - комната уже забронирована на это время или не верно указано время.
+    - `404 Not Found` - комната с указанным ID не найдена.
 
     Доступ: employee, admin.
     """
@@ -123,7 +123,7 @@ async def cancelled_my_bookgng(
     - **booking_id**: ID бронирования (>= 0).
 
     **Возможные ошибки:**
-    - `404 Not Found` — бронирование с указанным ID не найдено.
+    - `404 Not Found` - бронирование с указанным ID не найдено.
 
     Доступ: employee, admin.
     """
@@ -150,7 +150,7 @@ async def cancelled_user_booking(db: DBDep, booking_id: Annotated[int, Path(ge=0
     - **booking_id**: ID бронирования (>= 0).
 
     **Возможные ошибки:**
-    - `404 Not Found` — бронирование с указанным ID не найдено.
+    - `404 Not Found` - бронирование с указанным ID не найдено.
 
     Доступ: admin.
     """
@@ -248,7 +248,7 @@ async def get_availability_by_date_and_room(
     - **date**: Дата (YYYY-MM-DD, обязательна).
 
     **Возможные ошибки:**
-    - `404 Not Found` — комната с указанным ID не найдена.
+    - `404 Not Found` - комната с указанным ID не найдена.
 
     Доступ: employee, admin.
     """

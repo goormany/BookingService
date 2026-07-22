@@ -22,8 +22,10 @@ oauth2_scheme = OAuth2PasswordBearer(
 )
 tokenDep = Annotated[str, Depends(oauth2_scheme)]
 
+
 def get_ttl_for_redis(jwt_expire_time: int):
     return jwt_expire_time - int(datetime.now(timezone.utc).timestamp())
+
 
 async def refresh_token(
     db: DBDep, request: Annotated[RefreshTokenRequest, Body()]
@@ -50,10 +52,10 @@ async def refresh_token(
     new_refresh_token = AuthServices.create_access_token(
         str(user_id), timedelta(days=settings.JWT_REFRESH_TOKEN_EXPIRE_DAYS)
     )
-    
+
     ttl = get_ttl_for_redis(int(jwt_data.exp))
     await redis_manager.set(key=jwt_data.jti, value="refreshed_token", expire=ttl)
-    
+
     return TokenData(access_token=new_access_token, refresh_token=new_refresh_token)
 
 

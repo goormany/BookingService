@@ -18,10 +18,7 @@ password_hasher = PasswordHash.recommended()
 class AuthServices(BaseServices):
     @staticmethod
     def _create_data_for_token(user_id: str) -> dict[str, str]:
-        return {
-            "sub": str(user_id),
-            "jti": str(uuid4())
-        }
+        return {"sub": str(user_id), "jti": str(uuid4())}
 
     @staticmethod
     def get_password_hash(password: str) -> str:

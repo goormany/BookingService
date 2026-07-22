@@ -169,7 +169,11 @@ class TestCreateAccessToken:
 class TestDecodeAccessToken:
     @patch("src.services.auth.jwt.decode")
     def test_successful_decode(self, mock_jwt_decode):
-        mock_jwt_decode.return_value = {"sub": "1", "jti": "jwt.token.id", "exp": 1234567890}
+        mock_jwt_decode.return_value = {
+            "sub": "1",
+            "jti": "jwt.token.id",
+            "exp": 1234567890,
+        }
         token = "valid.token.here"
 
         result = AuthServices.decode_access_token(token)

@@ -224,7 +224,7 @@ async def test_logout_success(ac):
         headers={"Authorization": f"Bearer {access_token}"},
     )
     assert logout_response.status_code == 200
-    assert logout_response.json()["ok"] == True
+    assert logout_response.json()["ok"]
 
     refresh_after_logout_response = await ac.post(
         "/api/v1/auth/refresh", json={"refresh_token": refresh_token}
@@ -281,9 +281,8 @@ async def test_logout_expired_token(ac):
         headers={"Authorization": f"Bearer {access_token}"},
     )
     assert logout_response.status_code == 200
-    assert logout_response.json()["ok"] == True
+    assert logout_response.json()["ok"]
 
-    # Повторный logout с тем же истёкшим токеном — тоже 200 (уже в blacklist)
     second_logout_response = await ac.post(
         "/api/v1/auth/logout",
         json={"refresh_token": expired_refresh_token},
@@ -293,7 +292,6 @@ async def test_logout_expired_token(ac):
 
 
 async def test_logout_without_auth(ac):
-    """Логаут без access token (без Authorization) должен вернуть 401."""
     logout_response = await ac.post(
         "/api/v1/auth/logout",
         json={"refresh_token": "some_token"},
@@ -302,7 +300,6 @@ async def test_logout_without_auth(ac):
 
 
 async def test_logout_already_blacklisted(ac):
-    """Повторный логаут с тем же refresh_token должен вернуть 200 (уже в blacklist)."""
     username = "test_logout_twice_user"
     password = "test_password"
 
@@ -319,7 +316,6 @@ async def test_logout_already_blacklisted(ac):
     access_token = tokens["access_token"]
     refresh_token = tokens["refresh_token"]
 
-    # Первый логаут — успешный
     first_logout = await ac.post(
         "/api/v1/auth/logout",
         json={"refresh_token": refresh_token},
@@ -327,7 +323,6 @@ async def test_logout_already_blacklisted(ac):
     )
     assert first_logout.status_code == 200
 
-    # Второй логаут с тем же токеном — 200 (уже в blacklist)
     second_logout = await ac.post(
         "/api/v1/auth/logout",
         json={"refresh_token": refresh_token},

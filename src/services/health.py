@@ -1,5 +1,8 @@
 from src.services.base import BaseServices
-from src.utils.exceptions.exceptions import BookingNotConnDBException, BookingNotConnRedisException
+from src.utils.exceptions.exceptions import (
+    BookingNotConnDBException,
+    BookingNotConnRedisException,
+)
 
 
 class HealthService(BaseServices):

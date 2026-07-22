@@ -27,10 +27,10 @@ class Settings(BaseSettings):
             f"postgresql+asyncpg://{self.DB_USER}:{self.DB_PASSWORD}@"
             + f"{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
         )
-        
+
     REDIS_HOST: str
     REDIS_PORT: int
-    
+
     @property
     def REDIS_URL(self) -> str:
         return f"redis://default@{self.REDIS_HOST}:{self.REDIS_PORT}/0"

@@ -55,7 +55,7 @@ async def create_room(db: DBDep, room_data: RoomCreate):
     - **description**: Описание комнаты (необязательно).
 
     **Возможные ошибки:**
-    - `409 Conflict` — Ошибка уникальности комнаты.
+    - `409 Conflict` - Ошибка уникальности комнаты.
 
     Доступ: admin.
     """
@@ -80,7 +80,7 @@ async def get_room_by_id(db: DBDep, room_id: int = Path(ge=0)):
     - **room_id**: ID комнаты (>= 0).
 
     **Возможные ошибки:**
-    - `404 Not Found` — комната с указанным ID не найдена.
+    - `404 Not Found` - комната с указанным ID не найдена.
 
     Доступ: employee, admin.
     """
@@ -109,8 +109,8 @@ async def update_room_by_id(
     - **description**: Новое описание (необязательно).
 
     **Возможные ошибки:**
-    - `404 Not Found` — комната с указанным ID не найдена.
-    - `409 Conflict` — комната с таким названием уже существует.
+    - `404 Not Found` - комната с указанным ID не найдена.
+    - `409 Conflict` - комната с таким названием уже существует.
 
     Доступ: admin.
     """
@@ -137,7 +137,7 @@ async def delete_room_by_id(db: DBDep, room_id: int = Path(ge=0)):
     - **room_id**: ID комнаты (>= 0).
 
     **Возможные ошибки:**
-    - `404 Not Found` — комната с указанным ID не найдена.
+    - `404 Not Found` - комната с указанным ID не найдена.
 
     Доступ: admin.
     """

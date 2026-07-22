@@ -64,7 +64,7 @@ async def get_user_by_id(db: DBDep, user_id: Annotated[int, Path(ge=0)]):
     - **user_id**: ID пользователя (>= 0).
 
     **Возможные ошибки:**
-    - `404 Not Found` — пользователь с указанным ID не найден.
+    - `404 Not Found` - пользователь с указанным ID не найден.
 
     Доступ: admin.
     """
@@ -92,7 +92,7 @@ async def change_user_role(
     - **role**: Новая роль (`admin` или `employee`).
 
     **Возможные ошибки:**
-    - `404 Not Found` — пользователь с указанным ID не найден.
+    - `404 Not Found` - пользователь с указанным ID не найден.
 
     Доступ: admin.
     """
@@ -117,7 +117,7 @@ async def soft_delete_user(db: DBDep, user_id: Annotated[int, Path(ge=0)]):
     - **user_id**: ID пользователя (>= 0).
 
     **Возможные ошибки:**
-    - `404 Not Found` — пользователь с указанным ID не найден.
+    - `404 Not Found` - пользователь с указанным ID не найден.
 
     Доступ: admin.
     """
@@ -142,7 +142,7 @@ async def hard_delete_user(db: DBDep, user_id: Annotated[int, Path(ge=0)]):
     - **user_id**: ID пользователя (>= 0).
 
     **Возможные ошибки:**
-    - `404 Not Found` — пользователь с указанным ID не найден.
+    - `404 Not Found` - пользователь с указанным ID не найден.
 
     Доступ: admin.
     """
@@ -167,7 +167,7 @@ async def restore_user(db: DBDep, user_id: Annotated[int, Path(ge=0)]):
     - **user_id**: ID пользователя (>= 0).
 
     **Возможные ошибки:**
-    - `404 Not Found` — пользователь с указанным ID не найден.
+    - `404 Not Found` - пользователь с указанным ID не найден.
 
     Доступ: admin.
     """

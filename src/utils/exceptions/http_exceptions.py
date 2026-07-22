@@ -65,6 +65,7 @@ class InvalidRefreshToken(BookingRoomsHTTPException):
     detail = "Ошибка декодирование refresh token. Не верный токен"
     status_code = 400
 
+
 # ROOMS
 class RoomUniquessHTTPException(BookingRoomsHTTPException):
     detail = "Ошибка уникаольности команты"

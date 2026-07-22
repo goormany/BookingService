@@ -48,6 +48,7 @@ async def create_admin_user(init_db):
         await db.users.add(user_data)
         await db.commit()
 
+
 @pytest.fixture(scope="session", autouse=True)
 async def app_lifespan():
     async with LifespanManager(app):

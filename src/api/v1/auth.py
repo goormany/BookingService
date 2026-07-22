@@ -44,7 +44,7 @@ async def create_user(db: DBDep, user_data: UserIn):
     - **password**: Пароль в открытом виде (будет захeширован).
 
     **Возможные ошибки:**
-    - `409 Conflict` — пользователь с таким username уже существует.
+    - `409 Conflict` - пользователь с таким username уже существует.
     """
     try:
         return await UserService(db).create_user(user_data)
@@ -66,11 +66,11 @@ async def login_user(
     Принимает `username` и `password`
     Возвращает пару JWT-токенов.
 
-    - **access_token** — короткоживущий токен для доступа к API.
-    - **refresh_token** — долгоживущий токен для обновления access_token.
+    - **access_token** - короткоживущий токен для доступа к API.
+    - **refresh_token** - долгоживущий токен для обновления access_token.
 
     **Возможные ошибки:**
-    - `401 Unauthorized` — неверное имя пользователя или пароль.
+    - `401 Unauthorized` - неверное имя пользователя или пароль.
     """
     try:
         user = await UserService(db).get_user_with_password(username=user_data.username)
@@ -104,8 +104,8 @@ async def logout_user(
     """
     Инвалидирует refresh_token (добавляет в чёрный список Redis).
 
-    - Если refresh_token имеет неверную подпись — `401`.
-    - Если refresh_token уже в blacklist — просто возвращаем `200`.
+    - Если refresh_token имеет неверную подпись - `401`.
+    - Если refresh_token уже в blacklist - просто возвращаем `200`.
     """
     try:
         jwt_data = AuthServices.decode_access_token(request.refresh_token)
@@ -133,6 +133,6 @@ async def logout_user(
 async def refresh(refresh_token: RefreshTokenDep):
     """
     **Возможные ошибки:**
-    - `401 Unauthorized` — refresh_token истёк, невалиден или пользователь не найден.
+    - `401 Unauthorized` - refresh_token истёк, невалиден или пользователь не найден.
     """
     return refresh_token
