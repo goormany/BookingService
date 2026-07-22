@@ -13,6 +13,8 @@ services:
       DB_PORT: ${DB_PORT}
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PORT: ${REDIS_PORT}
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
       JWT_ALGORITHM: ${JWT_ALGORITHM}
       JWT_ACCESS_TOKEN_EXPIRE_MINUTES: ${JWT_ACCESS_TOKEN_EXPIRE_MINUTES}
@@ -21,6 +23,8 @@ services:
       - "${APP_PORT:-8000}:8000"
     depends_on:
       db:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     volumes:
       - ./src:/app/src
@@ -55,6 +59,20 @@ services:
       timeout: 5s
       retries: 5
       start_period: 10s
+  
+  redis:
+    container_name: booking_rooms_redis
+    image: redis:7
+    ports:
+      - ${REDIS_PORT_FROM:-6379}:6379
+    networks:
+      - booking_rooms_db_net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
 volumes:
   booking_rooms_db_data:
