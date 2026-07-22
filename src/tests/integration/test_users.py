@@ -7,14 +7,14 @@ async def test_get_me(employee_ac):
     assert response.json()["username"] == "employee"
 
 
-async def test_get_all_users_as_admin(admin_ac):
+async def test_ALL_USERS_as_admin(admin_ac):
     response = await admin_ac.get("/api/v1/users/")
     assert response.status_code == 200
     data = response.json()
     assert isinstance(data, list)
 
 
-async def test_get_all_users_as_employee(employee_ac):
+async def test_ALL_USERS_as_employee(employee_ac):
     response = await employee_ac.get("/api/v1/users/")
     assert response.status_code == 403
 

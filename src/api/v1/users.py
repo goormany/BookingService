@@ -1,12 +1,15 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Path
+from fastapi_cache import FastAPICache
+from fastapi_cache.decorator import cache
 
 from src.schemas.users import UserResponse, UserRoleSchema
 from src.services.users import UserService
 from src.api.dependencies.db import DBDep
 from src.api.dependencies.users import CurUserDep, get_admin_user
 from src.api.dependencies.paginations import PaginationDep
+from src.utils.enums.cache_ns import CacheNSEnum
 from src.utils.exceptions.exceptions import UserNotFoundException
 from src.utils.exceptions.http_exceptions import UserNotFoundHTTPException
 
@@ -21,7 +24,8 @@ router = APIRouter(prefix="/users", tags=["Users"])
     summary="Получить список всех пользователей",
     response_description="Список пользователей с пагинацией",
 )
-async def get_all_users(db: DBDep, pd: PaginationDep):
+@cache(expire=3600, namespace=CacheNSEnum.ALL_USERS.value)
+async def ALL_USERS(db: DBDep, pd: PaginationDep):
     """
     Возвращает список всех зарегистрированных пользователей с пагинацией.
 
@@ -97,7 +101,9 @@ async def change_user_role(
     Доступ: admin.
     """
     try:
-        return await UserService(db).change_user_role(user_id, role)
+        user = await UserService(db).change_user_role(user_id, role)
+        await FastAPICache.clear(namespace=CacheNSEnum.ALL_USERS.value)
+        return user
     except UserNotFoundException:
         raise UserNotFoundHTTPException
 
@@ -122,7 +128,9 @@ async def soft_delete_user(db: DBDep, user_id: Annotated[int, Path(ge=0)]):
     Доступ: admin.
     """
     try:
-        return await UserService(db).soft_delete(user_id)
+        user = await UserService(db).soft_delete(user_id)
+        await FastAPICache.clear(namespace=CacheNSEnum.ALL_USERS.value)
+        return user
     except UserNotFoundException:
         raise UserNotFoundHTTPException
 
@@ -147,7 +155,9 @@ async def hard_delete_user(db: DBDep, user_id: Annotated[int, Path(ge=0)]):
     Доступ: admin.
     """
     try:
-        return await UserService(db).hard_delete(user_id)
+        user = await UserService(db).hard_delete(user_id)
+        await FastAPICache.clear(namespace=CacheNSEnum.ALL_USERS.value)
+        return user
     except UserNotFoundException:
         raise UserNotFoundHTTPException
 
@@ -172,6 +182,8 @@ async def restore_user(db: DBDep, user_id: Annotated[int, Path(ge=0)]):
     Доступ: admin.
     """
     try:
-        return await UserService(db).restore_user(user_id)
+        user = await UserService(db).restore_user(user_id)
+        await FastAPICache.clear(namespace=CacheNSEnum.ALL_USERS.value)
+        return user
     except UserNotFoundException:
         raise UserNotFoundHTTPException

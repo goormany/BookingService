@@ -10,6 +10,7 @@
 - Разделение ролей: `admin` и `employee`
 - Аутентификация через JWT-токены
 - Blacklist refresh-токенов через Redis (защита от повторного использования)
+- **Кеширование ответов API** через Redis (fastapi-cache) с автоматическим сбросом кеша при изменении данных
 
 ## Технологии
 
@@ -17,7 +18,8 @@
 - **FastAPI** - веб-фреймворк
 - **SQLAlchemy** 2.0 (async) - работа с базой данных
 - **PostgreSQL** - хранилище данных
-- **Redis** - хранение blacklist refresh-токенов
+- **Redis** - хранение blacklist refresh-токенов и кеширование ответов API
+- **fastapi-cache** - кеширование ответов эндпоинтов
 - **Alembic** - миграции базы данных
 - **pytest** - тестирование
 - **Docker** - контейнеризация
@@ -163,8 +165,8 @@ src/
 | `GET` | `/users/{user_id}` | Данные конкретного пользователя  |
 | `PATCH` | `/users/{user_id}` | Изменение роли пользователя |
 | `PATCH` | `/users/{user_id}/restore` | Восстановление пользователя |
-| `DELETE` | `/users/{user_id}`  | Установка статусу is_active=False пользователю |
-| `DELETE` | `/users/{user_id}`  | Полное удаление пользователя |
+| `DELETE` | `/users/{user_id}`  | Мягкое удаление (is_active=False) |
+| `DELETE` | `/users/{user_id}/hard`  | Полное удаление из БД |
 
 ### Комнаты
 
@@ -175,29 +177,55 @@ src/
 | `GET` | `/rooms/{room_id}` | Получить комнату по ID |
 | `GET` | `/rooms/{room_id}/bookings` | Получить бронирования комнаты |
 | `PATCH` | `/rooms/{room_id}` | Изменение данных комнаты |
-| `DELETE` | `/rooms/{user_id}`  | Полное удаление комнаты |
+| `DELETE` | `/rooms/{room_id}`  | Полное удаление комнаты |
 
 ### Временные слоты
 
 | Метод | Путь | Описание |
 |-------|------|----------|
 | `POST` | `/rooms/{room_id}/slots/` | Создать слот для комнаты |
-| `GET` | `/rooms/{room_id}/slots/` | Получить слоты комнаты |
+| `DELETE` | `/rooms/{room_id}/slots/{slot_id}` | Удалить слот комнаты |
 
 ### Бронирования
 
 | Метод | Путь | Описание |
 |-------|------|----------|
 | `POST` | `/bookings/{room_id}` | Создать бронирование |
-| `GET` | `/bookings/?page=&per_page=` | Все бронирования с пагинцией |
-| `GET` | `/bookings/{booking_id}` | Бронирование команыт по booking_id |
-| `GET` | `/bookings/availability?page=&per_page=&date=` | Бронирование команат по booking_id по дате с пагинацией |
-| `GET` | `/bookings/availability/{room_id}?date=` | Бронирование команаты room_id по дате |
+| `GET` | `/bookings/?page=&per_page=&date=&status=&room_id=` | Все бронирования с фильтрацией и пагинацией (admin) |
+| `GET` | `/bookings/{booking_id}` | Бронирование по booking_id (admin) |
+| `GET` | `/bookings/availability?page=&per_page=&date=` | Доступность комнат на дату с пагинацией |
+| `GET` | `/bookings/availability/{room_id}?date=` | Доступность конкретной комнаты на дату |
 | `GET` | `/bookings/my` | Бронирование текущего пользователя |
 | `GET` | `/bookings/my/{room_id}` | Бронирование конкретной комнаты текущего пользователя |
 | `DELETE` | `/bookings/{booking_id}` | Отменить бронирование |
 | `DELETE` | `/bookings/my/{booking_id}` | Отменить свое бронирование |
 
+
+## Кеширование
+
+В сервисе используется **fastapi-cache** с Redis в качестве бэкенда. Кешируются GET-запросы, возвращающие списки данных. При изменении данных (создание, обновление, удаление) соответствующий кеш автоматически сбрасывается.
+
+### Кешируемые эндпоинты
+
+| Эндпоинт | Namespace | TTL |
+|----------|-----------|-----|
+| `GET /users/` | `get_all_users` | 3600c |
+| `GET /rooms/` | `get_all_rooms` | 3600c |
+| `GET /rooms/{room_id}/bookings` | `get_all_bookings_by_room_id` | 3600c |
+| `GET /bookings/` | `get_all_bookings` | 3600c |
+| `GET /bookings/availability` | `availability` | 3600c |
+| `GET /bookings/availability/{room_id}` | `availability` | 3600c |
+
+### Сброс кеша при мутациях
+
+| Действие | Сбрасываемые namespace |
+|----------|----------------------|
+| Регистрация пользователя | `get_all_users` |
+| Изменение роли / удаление / восстановление пользователя | `get_all_users` |
+| Создание / обновление комнаты | `get_all_rooms` |
+| **Удаление комнаты** | `get_all_rooms`, `availability`, `get_all_bookings_by_room_id`, `get_all_bookings` |
+| Создание / удаление временного слота | `availability`, `get_all_rooms` |
+| Создание / отмена бронирования | `get_all_bookings`, `get_all_bookings_by_room_id`, `availability` |
 
 ### Аутентификация и Blacklist Refresh-токенов
 

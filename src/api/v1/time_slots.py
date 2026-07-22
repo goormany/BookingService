@@ -1,10 +1,12 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Path
+from fastapi_cache import FastAPICache
 
 from src.api.dependencies.db import DBDep
 from src.schemas.time_slots import TimeSlotsIn, TimeSlotsResponse
 from src.services.time_slots import TimeSlotService
+from src.utils.enums.cache_ns import CacheNSEnum
 from src.utils.exceptions.exceptions import (
     RoomNotFoundException,
     TimeSlotNotFoundException,
@@ -48,7 +50,10 @@ async def create_slots(
     Доступ: admin.
     """
     try:
-        return await TimeSlotService(db).create_slot(time_slots_data, room_id=room_id)
+        time_slot = await TimeSlotService(db).create_slot(time_slots_data, room_id=room_id)
+        await FastAPICache.clear(namespace=CacheNSEnum.AVAILABILITY.value)
+        await FastAPICache.clear(namespace=CacheNSEnum.ALL_ROOMS.value)
+        return time_slot
     except RoomNotFoundException:
         raise RoomNotFoundHTTPException
     except TimeSlotsUniquessException:
@@ -79,6 +84,9 @@ async def delete_slot_by_id(
     Доступ: admin.
     """
     try:
-        return await TimeSlotService(db).delete_slot(id=slot_id, room_id=room_id)
+        time_slot = await TimeSlotService(db).delete_slot(id=slot_id, room_id=room_id)
+        await FastAPICache.clear(namespace=CacheNSEnum.AVAILABILITY.value)
+        await FastAPICache.clear(namespace=CacheNSEnum.ALL_ROOMS.value)
+        return time_slot
     except TimeSlotNotFoundException:
         raise TimeSlotNotFoundHTTPException

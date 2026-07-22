@@ -1,6 +1,8 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Path
+from fastapi_cache import FastAPICache
+from fastapi_cache.decorator import cache
 
 from src.api.dependencies.db import DBDep
 from src.api.dependencies.paginations import PaginationDep
@@ -8,6 +10,7 @@ from src.schemas.bookings import BookingResponse
 from src.schemas.rooms import RoomView, RoomWithSlotsResponse, RoomCreate, RoomUpdate
 from src.services.bookings import BookingService
 from src.services.rooms import RoomService
+from src.utils.enums.cache_ns import CacheNSEnum
 from src.utils.exceptions.exceptions import RoomNotFoundException, RoomUniquessException
 from src.utils.exceptions.http_exceptions import (
     RoomNotFoundHTTPException,
@@ -26,6 +29,7 @@ router = APIRouter(prefix="/rooms", tags=["Rooms"])
     summary="Получить список всех комнат",
     response_description="Список комнат с пагинацией",
 )
+@cache(expire=3600, namespace=CacheNSEnum.ALL_ROOMS.value)
 async def get_all_rooms(db: DBDep, pd: PaginationDep):
     """
     Возвращает список всех переговорных комнат с пагинацией.
@@ -60,7 +64,9 @@ async def create_room(db: DBDep, room_data: RoomCreate):
     Доступ: admin.
     """
     try:
-        return await RoomService(db).create(room_data)
+        room = await RoomService(db).create(room_data)
+        await FastAPICache.clear(namespace=CacheNSEnum.ALL_ROOMS.value)
+        return room
     except RoomUniquessException:
         raise RoomUniquessHTTPException
 
@@ -115,7 +121,9 @@ async def update_room_by_id(
     Доступ: admin.
     """
     try:
-        return await RoomService(db).update_room(room_data, id=room_id)
+        room = await RoomService(db).update_room(room_data, id=room_id)
+        await FastAPICache.clear(namespace=CacheNSEnum.ALL_ROOMS.value)
+        return room
     except RoomNotFoundException:
         raise RoomNotFoundHTTPException
     except RoomUniquessException:
@@ -142,7 +150,12 @@ async def delete_room_by_id(db: DBDep, room_id: int = Path(ge=0)):
     Доступ: admin.
     """
     try:
-        return await RoomService(db).delete_room(id=room_id)
+        room = await RoomService(db).delete_room(id=room_id)
+        await FastAPICache.clear(namespace=CacheNSEnum.ALL_ROOMS.value)
+        await FastAPICache.clear(namespace=CacheNSEnum.AVAILABILITY.value)
+        await FastAPICache.clear(namespace=CacheNSEnum.BOOKINGS_BY_ROOM_ID.value)
+        await FastAPICache.clear(namespace=CacheNSEnum.ALL_BOOKINGS.value)
+        return room
     except RoomNotFoundException:
         raise RoomNotFoundHTTPException
 
@@ -155,6 +168,7 @@ async def delete_room_by_id(db: DBDep, room_id: int = Path(ge=0)):
     response_description="Список бронирований для указанной комнаты",
     dependencies=[Depends(get_admin_user)],
 )
+@cache(expire=3600, namespace=CacheNSEnum.BOOKINGS_BY_ROOM_ID.value)
 async def get_bookings_by_room(
     db: DBDep,
     room_id: Annotated[int, Path(ge=0)],

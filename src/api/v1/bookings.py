@@ -2,6 +2,8 @@ from datetime import date
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Path, Query
+from fastapi_cache import FastAPICache
+from fastapi_cache.decorator import cache
 
 from src.api.dependencies.db import DBDep
 from src.schemas.bookings import (
@@ -12,6 +14,7 @@ from src.schemas.bookings import (
 )
 from src.services.bookings import BookingService
 from src.api.dependencies.paginations import PaginationDep
+from src.utils.enums.cache_ns import CacheNSEnum
 from src.utils.enums.status_bookings import StatusBookingEnum
 from src.utils.exceptions.exceptions import (
     BookingAlreadyBusyException,
@@ -38,6 +41,7 @@ router = APIRouter(prefix="/bookings", tags=["Bookings"])
     summary="Получить все бронирования (админ)",
     response_description="Список бронирований с фильтрацией и пагинацией",
 )
+@cache(expire=3600, namespace=CacheNSEnum.ALL_BOOKINGS.value)
 async def get_all_bookings(
     db: DBDep,
     pd: PaginationDep,
@@ -96,9 +100,13 @@ async def create_booking(
     Доступ: employee, admin.
     """
     try:
-        return await BookingService(db).create_booking(
+        booking = await BookingService(db).create_booking(
             booking_data, user_id=user.id, room_id=room_id
         )
+        await FastAPICache.clear(namespace=CacheNSEnum.ALL_BOOKINGS.value)
+        await FastAPICache.clear(namespace=CacheNSEnum.BOOKINGS_BY_ROOM_ID.value)
+        await FastAPICache.clear(namespace=CacheNSEnum.AVAILABILITY.value)
+        return booking
     except BookingAlreadyBusyException:
         raise BookingAlreadyBusyHTTPException
     except RoomNotFoundException:
@@ -128,9 +136,13 @@ async def cancelled_my_bookgng(
     Доступ: employee, admin.
     """
     try:
-        return await BookingService(db).soft_delete_booking(
+        booking = await BookingService(db).soft_delete_booking(
             user_id=user.id, id=booking_id
         )
+        await FastAPICache.clear(namespace=CacheNSEnum.ALL_BOOKINGS.value)
+        await FastAPICache.clear(namespace=CacheNSEnum.BOOKINGS_BY_ROOM_ID.value)
+        await FastAPICache.clear(namespace=CacheNSEnum.AVAILABILITY.value)
+        return booking        
     except BookingNotFoundException:
         raise BookingNotFoundHTTPException
 
@@ -155,7 +167,11 @@ async def cancelled_user_booking(db: DBDep, booking_id: Annotated[int, Path(ge=0
     Доступ: admin.
     """
     try:
-        return await BookingService(db).soft_delete_booking(id=booking_id)
+        booking = await BookingService(db).soft_delete_booking(id=booking_id)
+        await FastAPICache.clear(namespace=CacheNSEnum.ALL_BOOKINGS.value)
+        await FastAPICache.clear(namespace=CacheNSEnum.BOOKINGS_BY_ROOM_ID.value)
+        await FastAPICache.clear(namespace=CacheNSEnum.AVAILABILITY.value)
+        return booking
     except BookingNotFoundException:
         raise BookingNotFoundHTTPException
 
@@ -213,6 +229,7 @@ async def get_my_bookings_by_room_id(
     summary="Получить доступность комнат на дату",
     response_description="Список комнат со свободными временными интервалами",
 )
+@cache(expire=3600, namespace=CacheNSEnum.AVAILABILITY.value)
 async def get_availability_by_date(
     db: DBDep, pd: PaginationDep, date: date = Query(example="2026-07-16")
 ):
@@ -238,6 +255,7 @@ async def get_availability_by_date(
     summary="Получить доступность конкретной комнаты на дату",
     response_description="Свободные интервалы для указанной комнаты",
 )
+@cache(expire=3600, namespace=CacheNSEnum.AVAILABILITY.value)
 async def get_availability_by_date_and_room(
     db: DBDep, room_id: int = Path(ge=0), date: date = Query(example="2026-07-16")
 ):

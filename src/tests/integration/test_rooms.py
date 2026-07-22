@@ -19,7 +19,7 @@ async def test_create_room_as_employee(employee_ac):
 
 
 @pytest.mark.parametrize("client", ["employee_ac", "admin_ac"])
-async def test_get_all_rooms(client, request):
+async def test_ALL_ROOMS(client, request):
     client = request.getfixturevalue(client)
 
     response = await client.get("/api/v1/rooms/")

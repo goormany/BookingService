@@ -3,6 +3,7 @@ from datetime import timedelta
 
 from fastapi import APIRouter, Body, Depends
 from fastapi.security import OAuth2PasswordRequestForm
+from fastapi_cache import FastAPICache
 
 from src.schemas.users import UserResponse, UserIn
 from src.schemas.auth import RefreshTokenRequest, TokenData
@@ -14,6 +15,7 @@ from src.api.dependencies.users import CurUserDep
 from src.schemas.utils import BaseSuccessResponse
 from src.services.users import UserService
 from src.services.auth import AuthServices
+from src.utils.enums.cache_ns import CacheNSEnum
 from src.utils.exceptions.exceptions import (
     UserNotFoundException,
     UsersUniquessException,
@@ -47,7 +49,9 @@ async def create_user(db: DBDep, user_data: UserIn):
     - `409 Conflict` - пользователь с таким username уже существует.
     """
     try:
-        return await UserService(db).create_user(user_data)
+        user = await UserService(db).create_user(user_data)
+        await FastAPICache.clear(namespace=CacheNSEnum.ALL_USERS.value)
+        return user
     except UsersUniquessException:
         raise UsersUniquessHTTPException
 
