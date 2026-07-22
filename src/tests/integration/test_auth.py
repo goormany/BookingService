@@ -103,6 +103,35 @@ async def test_refresh_token_success(ac):
     assert new_refresh_payload.sub == str(user_id)
 
 
+async def test_refresh_token_already_blacklisted(ac):
+    """Refresh token должен быть занесён в blacklist после первого использования."""
+    username = "test_refresh_blacklist_user"
+    password = "test_password"
+
+    register_response = await ac.post(
+        "/api/v1/auth/register", json={"username": username, "password": password}
+    )
+    assert register_response.status_code == 201
+
+    login_response = await ac.post(
+        "/api/v1/auth/login", data={"username": username, "password": password}
+    )
+    assert login_response.status_code == 200
+    old_refresh_token = login_response.json()["refresh_token"]
+
+    # Первый refresh — успешный
+    first_refresh_response = await ac.post(
+        "/api/v1/auth/refresh", json={"refresh_token": old_refresh_token}
+    )
+    assert first_refresh_response.status_code == 200
+
+    # Второй refresh с тем же токеном — должен быть 401 (токен уже в blacklist)
+    second_refresh_response = await ac.post(
+        "/api/v1/auth/refresh", json={"refresh_token": old_refresh_token}
+    )
+    assert second_refresh_response.status_code == 401
+
+
 async def test_refresh_token_expired(ac):
     username = "test_refresh_expired_user"
     password = "test_password"
@@ -170,3 +199,138 @@ async def test_login_with_empty_password(ac):
         "/api/v1/auth/login", data={"username": "admin", "password": ""}
     )
     assert response.status_code == 422
+
+
+async def test_logout_success(ac):
+    username = "test_logout_user"
+    password = "test_password"
+
+    register_response = await ac.post(
+        "/api/v1/auth/register", json={"username": username, "password": password}
+    )
+    assert register_response.status_code == 201
+
+    login_response = await ac.post(
+        "/api/v1/auth/login", data={"username": username, "password": password}
+    )
+    assert login_response.status_code == 200
+    tokens = login_response.json()
+    access_token = tokens["access_token"]
+    refresh_token = tokens["refresh_token"]
+
+    logout_response = await ac.post(
+        "/api/v1/auth/logout",
+        json={"refresh_token": refresh_token},
+        headers={"Authorization": f"Bearer {access_token}"},
+    )
+    assert logout_response.status_code == 200
+    assert logout_response.json()["ok"] == True
+
+    refresh_after_logout_response = await ac.post(
+        "/api/v1/auth/refresh", json={"refresh_token": refresh_token}
+    )
+    assert refresh_after_logout_response.status_code == 401
+
+
+async def test_logout_invalid_token(ac):
+    username = "test_logout_invalid_user"
+    password = "test_password"
+
+    register_response = await ac.post(
+        "/api/v1/auth/register", json={"username": username, "password": password}
+    )
+    assert register_response.status_code == 201
+
+    login_response = await ac.post(
+        "/api/v1/auth/login", data={"username": username, "password": password}
+    )
+    assert login_response.status_code == 200
+    access_token = login_response.json()["access_token"]
+
+    logout_response = await ac.post(
+        "/api/v1/auth/logout",
+        json={"refresh_token": "invalid_token_string"},
+        headers={"Authorization": f"Bearer {access_token}"},
+    )
+    assert logout_response.status_code == 400
+
+
+async def test_logout_expired_token(ac):
+    username = "test_logout_expired_user"
+    password = "test_password"
+
+    register_response = await ac.post(
+        "/api/v1/auth/register", json={"username": username, "password": password}
+    )
+    assert register_response.status_code == 201
+    user_id = register_response.json()["id"]
+
+    login_response = await ac.post(
+        "/api/v1/auth/login", data={"username": username, "password": password}
+    )
+    assert login_response.status_code == 200
+    access_token = login_response.json()["access_token"]
+
+    expired_refresh_token = AuthServices.create_access_token(
+        str(user_id), timedelta(seconds=-1)
+    )
+
+    logout_response = await ac.post(
+        "/api/v1/auth/logout",
+        json={"refresh_token": expired_refresh_token},
+        headers={"Authorization": f"Bearer {access_token}"},
+    )
+    assert logout_response.status_code == 200
+    assert logout_response.json()["ok"] == True
+
+    # Повторный logout с тем же истёкшим токеном — тоже 200 (уже в blacklist)
+    second_logout_response = await ac.post(
+        "/api/v1/auth/logout",
+        json={"refresh_token": expired_refresh_token},
+        headers={"Authorization": f"Bearer {access_token}"},
+    )
+    assert second_logout_response.status_code == 200
+
+
+async def test_logout_without_auth(ac):
+    """Логаут без access token (без Authorization) должен вернуть 401."""
+    logout_response = await ac.post(
+        "/api/v1/auth/logout",
+        json={"refresh_token": "some_token"},
+    )
+    assert logout_response.status_code == 401
+
+
+async def test_logout_already_blacklisted(ac):
+    """Повторный логаут с тем же refresh_token должен вернуть 200 (уже в blacklist)."""
+    username = "test_logout_twice_user"
+    password = "test_password"
+
+    register_response = await ac.post(
+        "/api/v1/auth/register", json={"username": username, "password": password}
+    )
+    assert register_response.status_code == 201
+
+    login_response = await ac.post(
+        "/api/v1/auth/login", data={"username": username, "password": password}
+    )
+    assert login_response.status_code == 200
+    tokens = login_response.json()
+    access_token = tokens["access_token"]
+    refresh_token = tokens["refresh_token"]
+
+    # Первый логаут — успешный
+    first_logout = await ac.post(
+        "/api/v1/auth/logout",
+        json={"refresh_token": refresh_token},
+        headers={"Authorization": f"Bearer {access_token}"},
+    )
+    assert first_logout.status_code == 200
+
+    # Второй логаут с тем же токеном — 200 (уже в blacklist)
+    second_logout = await ac.post(
+        "/api/v1/auth/logout",
+        json={"refresh_token": refresh_token},
+        headers={"Authorization": f"Bearer {access_token}"},
+    )
+    assert second_logout.status_code == 200

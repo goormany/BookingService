@@ -9,6 +9,7 @@
 - Управление комнатами и временными слотами
 - Разделение ролей: `admin` и `employee`
 - Аутентификация через JWT-токены
+- Blacklist refresh-токенов через Redis (защита от повторного использования)
 
 ## Технологии
 
@@ -16,6 +17,7 @@
 - **FastAPI** — веб-фреймворк
 - **SQLAlchemy** 2.0 (async) — работа с базой данных
 - **PostgreSQL** — хранилище данных
+- **Redis** — хранение blacklist refresh-токенов
 - **Alembic** — миграции базы данных
 - **pytest** — тестирование
 - **Docker** — контейнеризация
@@ -132,6 +134,8 @@ src/
 | `DB_USER` | Пользователь PostgreSQL | `root` |
 | `DB_PASSWORD` | Пароль PostgreSQL | `root` |
 | `DB_NAME` | Имя базы данных | `booking_rooms_db` |
+| `REDIS_HOST` | Хост Redis | `redis` |
+| `REDIS_PORT` | Порт Redis | `6379` |
 | `JWT_SECRET_KEY` | Секретный ключ для JWT | `Команда генерации openssl rand -hex 32` |
 | `JWT_ALGORITHM` | Алгоритм JWT | `HS256` |
 | `JWT_ACCESS_TOKEN_EXPIRE_MINUTES` | Время жизни access-токена | `30` |
@@ -147,7 +151,8 @@ src/
 |-------|------|----------|
 | `POST` | `/auth/register` | Регистрация нового пользователя |
 | `POST` | `/auth/login` | Аутентификация пользователя |
-| `POST` | `/auth/refresh` | Обновление токенов доступа и рефреш токена |
+| `POST` | `/auth/logout` | Выход из системы (инвалидация refresh-токена) |
+| `POST` | `/auth/refresh` | Обновление пары access + refresh токенов |
 
 ### Пользователи
 
@@ -194,6 +199,14 @@ src/
 | `DELETE` | `/bookings/my/{booking_id}` | Отменить свое бронирование |
 
 
+### Аутентификация и Blacklist Refresh-токенов
+
+В сервисе используется двухтокенная аутентификация (access + refresh). Refresh-токены защищены от повторного использования через blacklist в Redis:
+
+- **При выходе (`/auth/logout`):** переданный refresh-токен заносится в blacklist. Если токен имеет неверную подпись — возвращается `401`.
+- **При обновлении (`/auth/refresh`):** старый refresh-токен помечается как "refreshed" и больше не может быть использован. При повторной попытке использования того же токена возвращается `401`.
+- **Очистка blacklist:** происходит автоматически по истечении TTL, равного оставшемуся времени жизни токена.
+
 ### Проверка здоровья проекта
 
 | Метод | Путь | Описание |
@@ -214,7 +227,7 @@ curl -X POST "http://localhost:8000/api/v1/auth/token" \
 ```json
 {
   "access_token": "eyJ...",
-  "refresg_token": "eyJ...",
+  "refresh_token": "eyJ...",
   "token_type": "bearer"
 }
 ```

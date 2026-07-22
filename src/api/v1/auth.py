@@ -22,7 +22,7 @@ from src.utils.exceptions.exceptions import (
 )
 from src.utils.exceptions.http_exceptions import (
     InvalidCredentialsException,
-    UnauthorizedHTTPException,
+    InvalidRefreshToken,
     UsersUniquessHTTPException,
 )
 
@@ -104,23 +104,23 @@ async def logout_user(
     """
     Инвалидирует refresh_token (добавляет в чёрный список Redis).
 
-    - **refresh_token**: Токен, который нужно инвалидировать.
-
-    **Возможные ошибки:**
-    - `401 Unauthorized` — токен невалиден, истёк или уже в чёрном списке.
+    - Если refresh_token имеет неверную подпись — `401`.
+    - Если refresh_token уже в blacklist — просто возвращаем `200`.
     """
     try:
         jwt_data = AuthServices.decode_access_token(request.refresh_token)
-    except (InvalidTokenDecodedException, ExpiredJWTTokenException):
-        raise UnauthorizedHTTPException
+    except InvalidTokenDecodedException:
+        raise InvalidRefreshToken
+    except ExpiredJWTTokenException:
+        return BaseSuccessResponse()
 
     if await redis_manager.get(jwt_data.jti) is not None:
-        raise UnauthorizedHTTPException
+        return BaseSuccessResponse()
 
     ttl = get_ttl_for_redis(int(jwt_data.exp))
     await redis_manager.set(key=jwt_data.jti, value="blacklisted", expire=ttl)
 
-    return BaseSuccessResponse(ok="true")
+    return BaseSuccessResponse()
 
 
 @router.post(
