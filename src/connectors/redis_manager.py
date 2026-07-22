@@ -1,5 +1,3 @@
-import logging
-
 import redis.asyncio as redis
 
 
@@ -9,9 +7,7 @@ class RedisManager:
         self.redis = None
 
     async def connect(self):
-        logging.info("redis try connect")
         self.redis = await redis.from_url(self.redis_url)
-        logging.info("redis connected")
 
     async def close(self):
         if self.redis:

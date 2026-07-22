@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta, timezone
+from uuid import uuid4
 
 import jwt
 from pwdlib import PasswordHash
@@ -17,7 +18,10 @@ password_hasher = PasswordHash.recommended()
 class AuthServices(BaseServices):
     @staticmethod
     def _create_data_for_token(user_id: str) -> dict[str, str]:
-        return {"sub": str(user_id)}
+        return {
+            "sub": str(user_id),
+            "jti": str(uuid4())
+        }
 
     @staticmethod
     def get_password_hash(password: str) -> str:

@@ -1,22 +1,28 @@
 from typing import Annotated
 from datetime import timedelta
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Body, Depends
 from fastapi.security import OAuth2PasswordRequestForm
 
 from src.schemas.users import UserResponse, UserIn
-from src.schemas.auth import TokenData
+from src.schemas.auth import RefreshTokenRequest, TokenData
 from src.config import settings
+from src.connectors.setup import redis_manager
 from src.api.dependencies.db import DBDep
-from src.api.dependencies.auth import RefreshTokenDep
+from src.api.dependencies.auth import RefreshTokenDep, get_ttl_for_redis
+from src.api.dependencies.users import CurUserDep
+from src.schemas.utils import BaseSuccessResponse
 from src.services.users import UserService
 from src.services.auth import AuthServices
 from src.utils.exceptions.exceptions import (
     UserNotFoundException,
     UsersUniquessException,
+    InvalidTokenDecodedException,
+    ExpiredJWTTokenException,
 )
 from src.utils.exceptions.http_exceptions import (
     InvalidCredentialsException,
+    UnauthorizedHTTPException,
     UsersUniquessHTTPException,
 )
 
@@ -81,6 +87,40 @@ async def login_user(
         str(user.id), timedelta(days=settings.JWT_REFRESH_TOKEN_EXPIRE_DAYS)
     )
     return TokenData(access_token=jwt_token, refresh_token=refresh_token)
+
+
+@router.post(
+    "/logout",
+    status_code=200,
+    response_model=BaseSuccessResponse,
+    summary="Выход из системы",
+    response_description="Сообщение об успешном выходе",
+)
+async def logout_user(
+    db: DBDep,
+    user: CurUserDep,
+    request: Annotated[RefreshTokenRequest, Body()],
+):
+    """
+    Инвалидирует refresh_token (добавляет в чёрный список Redis).
+
+    - **refresh_token**: Токен, который нужно инвалидировать.
+
+    **Возможные ошибки:**
+    - `401 Unauthorized` — токен невалиден, истёк или уже в чёрном списке.
+    """
+    try:
+        jwt_data = AuthServices.decode_access_token(request.refresh_token)
+    except (InvalidTokenDecodedException, ExpiredJWTTokenException):
+        raise UnauthorizedHTTPException
+
+    if await redis_manager.get(jwt_data.jti) is not None:
+        raise UnauthorizedHTTPException
+
+    ttl = get_ttl_for_redis(int(jwt_data.exp))
+    await redis_manager.set(key=jwt_data.jti, value="blacklisted", expire=ttl)
+
+    return BaseSuccessResponse(ok="true")
 
 
 @router.post(

@@ -14,4 +14,5 @@ class TokenData(RefreshTokenRequest):
 
 class JWTData(BaseModel):
     sub: str
+    jti: str
     exp: int
