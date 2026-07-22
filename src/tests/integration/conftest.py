@@ -1,5 +1,6 @@
 import pytest
 from httpx import AsyncClient, ASGITransport
+from asgi_lifespan import LifespanManager
 
 from src.api.dependencies.db import get_db
 from src.config import settings
@@ -47,9 +48,14 @@ async def create_admin_user(init_db):
         await db.users.add(user_data)
         await db.commit()
 
+@pytest.fixture(scope="session", autouse=True)
+async def app_lifespan():
+    async with LifespanManager(app):
+        yield
+
 
 @pytest.fixture(scope="session")
-async def ac() -> AsyncClient:  # type: ignore
+async def ac(app_lifespan) -> AsyncClient:  # type: ignore
     async with AsyncClient(
         transport=ASGITransport(app=app), base_url="http://test"
     ) as ac:
@@ -64,7 +70,7 @@ async def register_user(ac):
 
 
 @pytest.fixture(scope="session")
-async def employee_ac():
+async def employee_ac(app_lifespan):
     async with AsyncClient(
         transport=ASGITransport(app=app), base_url="http://test"
     ) as ac:
@@ -76,7 +82,7 @@ async def employee_ac():
 
 
 @pytest.fixture(scope="session")
-async def admin_ac(create_admin_user):
+async def admin_ac(create_admin_user, app_lifespan):
     async with AsyncClient(
         transport=ASGITransport(app=app), base_url="http://test"
     ) as ac:

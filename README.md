@@ -279,6 +279,10 @@ poetry run pytest src/tests/integration
 ```bash
 docker compose --env-file .env.test -f docker-compose.test.yml run --rm app pytest -v
 ```
+или
+``` bash
+docker compose --env-file .env.test -f docker-compose.test.yml up --abort-on-container-exit --exit-code-from app
+```
 
 ### Создание миграции
 
