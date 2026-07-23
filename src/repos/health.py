@@ -1,8 +1,8 @@
 from sqlalchemy import select
-from redis.exceptions import TimeoutError as RedisTimeoutError
 
 from src.repos.base import BaseRepository
 from src.connectors.setup import redis_manager
+from src.utils.enums.redis_state import RedisStateEnum
 from src.utils.exceptions.exceptions import (
     BookingNotConnDBException,
     BookingNotConnRedisException,
@@ -20,10 +20,6 @@ class HealthRepository(BaseRepository):
             raise BookingNotConnDBException
 
     async def check_connect_redis(self) -> bool:
-        key = "test_key"
-        value = "test_value"
-        try:
-            await redis_manager.set(key, value, expire=60)
-            value = await redis_manager.get(key)
-        except RedisTimeoutError:
+        if redis_manager.state != RedisStateEnum.CONNECTED:
             raise BookingNotConnRedisException
+        return True

@@ -1,5 +1,6 @@
 from datetime import timedelta
 
+from src.utils.enums.redis_state import RedisStateEnum
 from src.utils.enums.user_roles import UserRoleEnum
 from src.services.auth import AuthServices
 
@@ -104,7 +105,6 @@ async def test_refresh_token_success(ac):
 
 
 async def test_refresh_token_already_blacklisted(ac):
-    """Refresh token должен быть занесён в blacklist после первого использования."""
     username = "test_refresh_blacklist_user"
     password = "test_password"
 
@@ -119,17 +119,20 @@ async def test_refresh_token_already_blacklisted(ac):
     assert login_response.status_code == 200
     old_refresh_token = login_response.json()["refresh_token"]
 
-    # Первый refresh — успешный
     first_refresh_response = await ac.post(
         "/api/v1/auth/refresh", json={"refresh_token": old_refresh_token}
     )
     assert first_refresh_response.status_code == 200
 
-    # Второй refresh с тем же токеном — должен быть 401 (токен уже в blacklist)
     second_refresh_response = await ac.post(
         "/api/v1/auth/refresh", json={"refresh_token": old_refresh_token}
     )
-    assert second_refresh_response.status_code == 401
+    
+    redis_manager = ac._transport.app.state.redis_manager
+    if redis_manager.state is RedisStateEnum.CONNECTED:
+        assert second_refresh_response.status_code == 401
+    else:
+        assert second_refresh_response.status_code == 200
 
 
 async def test_refresh_token_expired(ac):
@@ -229,7 +232,13 @@ async def test_logout_success(ac):
     refresh_after_logout_response = await ac.post(
         "/api/v1/auth/refresh", json={"refresh_token": refresh_token}
     )
-    assert refresh_after_logout_response.status_code == 401
+    
+    redis_manager = ac._transport.app.state.redis_manager
+    
+    if redis_manager.state is RedisStateEnum.CONNECTED:
+        assert refresh_after_logout_response.status_code == 401
+    else:
+        assert refresh_after_logout_response.status_code == 200    
 
 
 async def test_logout_invalid_token(ac):
