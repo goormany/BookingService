@@ -50,7 +50,9 @@ async def create_slots(
     Доступ: admin.
     """
     try:
-        time_slot = await TimeSlotService(db).create_slot(time_slots_data, room_id=room_id)
+        time_slot = await TimeSlotService(db).create_slot(
+            time_slots_data, room_id=room_id
+        )
         await FastAPICache.clear(namespace=CacheNSEnum.AVAILABILITY.value)
         await FastAPICache.clear(namespace=CacheNSEnum.ALL_ROOMS.value)
         return time_slot

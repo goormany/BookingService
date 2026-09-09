@@ -1,5 +1,6 @@
 from enum import StrEnum
 
+
 class CacheNSEnum(StrEnum):
     ALL_USERS = "get_all_users"
     ALL_ROOMS = "get_all_rooms"

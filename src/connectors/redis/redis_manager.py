@@ -37,7 +37,7 @@ class RedisManager:
                 await self.redis.ping()
                 self._state = RedisStateEnum.CONNECTED
                 self._reconnect_delay = RECONNECT_BASE_DELAY
-            except (RedisTimeoutError, RedisConnectionError, OSError) as e:
+            except (RedisTimeoutError, RedisConnectionError, OSError):
                 self._state = RedisStateEnum.DISCONNECTED
                 self.redis = None
                 self._start_reconnect()
@@ -53,9 +53,7 @@ class RedisManager:
                 self.redis = None
             self._state = RedisStateEnum.DISCONNECTED
 
-    async def set(
-        self, key: str, value: str, expire: int | None = None
-    ) -> None:
+    async def set(self, key: str, value: str, expire: int | None = None) -> None:
         if self._state != RedisStateEnum.CONNECTED or self.redis is None:
             return
         try:
@@ -116,7 +114,7 @@ class RedisManager:
                     self._state = RedisStateEnum.CONNECTED
                     self._reconnect_delay = RECONNECT_BASE_DELAY
                 return
-            except (RedisTimeoutError, RedisConnectionError, OSError) as e:
+            except (RedisTimeoutError, RedisConnectionError, OSError):
                 self._reconnect_delay = min(
                     self._reconnect_delay * 2, RECONNECT_MAX_DELAY
                 )

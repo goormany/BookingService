@@ -1,0 +1,51 @@
+name: test_prj
+on:
+  pull_request:
+
+jobs:
+  lint:
+    name: lint & format
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7.0.1
+
+      - name: install poetry & deps
+        run: pipx install poetry && poetry sync
+
+      - name: linter
+        run: poetry run ruff check
+
+      - name: check formatter
+        run: poetry run ruff format --check
+
+  test:
+    name: tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7.0.1
+
+      - name: create .env.test
+        env:
+          JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+        run: |
+          cat > .env.test <<EOF
+          MODE=TEST
+          APP_HOST=0.0.0.0
+          APP_PORT=8000
+          DB_HOST=db
+          DB_PORT=5432
+          DB_USER=root
+          DB_PASSWORD=root
+          DB_NAME=booking_rooms_test_db
+          REDIS_HOST=redis
+          REDIS_PORT=6379
+          JWT_SECRET_KEY=${JWT_SECRET_KEY:-5fbe5e570a014dfc59202625a33fa060939188e2a0034770bf10aca5e8fc96b7}
+          JWT_ALGORITHM=HS256
+          JWT_ACCESS_TOKEN_EXPIRE_MINUTES=30
+          JWT_REFRESH_TOKEN_EXPIRE_DAYS=7
+          EOF
+
+      - name: testing
+        run: docker compose --env-file .env.test -f docker-compose.test.yml up --abort-on-container-exit --exit-code-from app
