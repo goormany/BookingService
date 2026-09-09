@@ -142,7 +142,7 @@ async def cancelled_my_bookgng(
         await FastAPICache.clear(namespace=CacheNSEnum.ALL_BOOKINGS.value)
         await FastAPICache.clear(namespace=CacheNSEnum.BOOKINGS_BY_ROOM_ID.value)
         await FastAPICache.clear(namespace=CacheNSEnum.AVAILABILITY.value)
-        return booking        
+        return booking
     except BookingNotFoundException:
         raise BookingNotFoundHTTPException
 

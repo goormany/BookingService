@@ -127,7 +127,7 @@ async def test_refresh_token_already_blacklisted(ac):
     second_refresh_response = await ac.post(
         "/api/v1/auth/refresh", json={"refresh_token": old_refresh_token}
     )
-    
+
     redis_manager = ac._transport.app.state.redis_manager
     if redis_manager.state is RedisStateEnum.CONNECTED:
         assert second_refresh_response.status_code == 401
@@ -232,13 +232,13 @@ async def test_logout_success(ac):
     refresh_after_logout_response = await ac.post(
         "/api/v1/auth/refresh", json={"refresh_token": refresh_token}
     )
-    
+
     redis_manager = ac._transport.app.state.redis_manager
-    
+
     if redis_manager.state is RedisStateEnum.CONNECTED:
         assert refresh_after_logout_response.status_code == 401
     else:
-        assert refresh_after_logout_response.status_code == 200    
+        assert refresh_after_logout_response.status_code == 200
 
 
 async def test_logout_invalid_token(ac):
