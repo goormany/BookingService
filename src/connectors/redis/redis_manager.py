@@ -53,9 +53,7 @@ class RedisManager:
                 self.redis = None
             self._state = RedisStateEnum.DISCONNECTED
 
-    async def set(
-        self, key: str, value: str, expire: int | None = None
-    ) -> None:
+    async def set(self, key: str, value: str, expire: int | None = None) -> None:
         if self._state != RedisStateEnum.CONNECTED or self.redis is None:
             return
         try:

@@ -18,9 +18,9 @@ from src.utils.cache import request_key_builder
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await redis_manager.connect()
-    
+
     app.state.redis_manager = redis_manager
-    
+
     FastAPICache.init(
         SafeRedisBackend(redis_manager),
         prefix="fastapi-cache",

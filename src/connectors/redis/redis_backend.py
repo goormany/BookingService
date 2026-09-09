@@ -21,12 +21,8 @@ class SafeRedisBackend(Backend):
             return None
         return value.encode()
 
-    async def set(
-        self, key: str, value: bytes, expire: int | None = None
-    ) -> None:
-        await self._manager.set(
-            key, value.decode(), expire=expire
-        )
+    async def set(self, key: str, value: bytes, expire: int | None = None) -> None:
+        await self._manager.set(key, value.decode(), expire=expire)
 
     async def clear(self, namespace: str | None = None, key: str | None = None) -> int:
         if key is not None:
@@ -34,4 +30,3 @@ class SafeRedisBackend(Backend):
         if namespace is not None:
             return await self._manager.clear_by_pattern(namespace)
         return 0
-        
