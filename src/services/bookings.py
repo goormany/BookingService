@@ -21,16 +21,40 @@ from src.utils.exceptions.exceptions import (
 
 
 class BookingService(BaseServices):
+    @staticmethod
+    def _merge_slots(slots: list) -> list[tuple[time, time]]:
+        """Объединяет пересекающиеся и соприкасающиеся слоты в непересекающиеся
+        интервалы. Слоты считаются полуоткрытыми интервалами [start, end).
+        """
+        intervals = sorted(
+            ((slot.start, slot.end) for slot in slots),
+            key=lambda x: (x[0], x[1]),
+        )
+
+        merged: list[tuple[time, time]] = []
+        for start, end in intervals:
+            if not merged:
+                merged.append((start, end))
+                continue
+
+            last_start, last_end = merged[-1]
+            if start <= last_end:
+                if end > last_end:
+                    merged[-1] = (last_start, end)
+            else:
+                merged.append((start, end))
+
+        return merged
+
     def _compute_free_slots(
         self,
         slots: list,
         booked_intervals: list[tuple[time, time]],
     ) -> list[FreeInterval]:
         free_slots: list[FreeInterval] = []
-        for slot in slots:
-            start = slot.start
-            end = slot.end
+        merged_slots = self._merge_slots(slots)
 
+        for start, end in merged_slots:
             overlapping = [
                 (bs, be) for bs, be in booked_intervals if bs < end and be > start
             ]
