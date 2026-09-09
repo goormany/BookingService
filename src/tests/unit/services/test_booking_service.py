@@ -152,6 +152,51 @@ class TestComputeFreeSlots:
 
         assert result == []
 
+    def test_overlapping_slots_merged_no_bookings(self):
+        slots = [
+            Slot(time(10, 0), time(15, 0)),
+            Slot(time(13, 0), time(16, 0)),
+        ]
+        booked = []
+        result = self.service._compute_free_slots(slots, booked)
+
+        assert len(result) == 1
+        assert result[0] == FreeInterval(start_time=time(10, 0), end_time=time(16, 0))
+
+    def test_overlapping_slots_merged_with_bookings(self):
+        slots = [
+            Slot(time(10, 0), time(15, 0)),
+            Slot(time(13, 0), time(16, 0)),
+        ]
+        booked = [(time(11, 0), time(14, 0))]
+        result = self.service._compute_free_slots(slots, booked)
+
+        assert len(result) == 2
+        assert result[0] == FreeInterval(start_time=time(10, 0), end_time=time(11, 0))
+        assert result[1] == FreeInterval(start_time=time(14, 0), end_time=time(16, 0))
+
+    def test_adjacent_slots_merged(self):
+        slots = [
+            Slot(time(9, 0), time(12, 0)),
+            Slot(time(12, 0), time(14, 0)),
+        ]
+        booked = []
+        result = self.service._compute_free_slots(slots, booked)
+
+        assert len(result) == 1
+        assert result[0] == FreeInterval(start_time=time(9, 0), end_time=time(14, 0))
+
+    def test_merge_slots_does_not_mutate_input(self):
+        a = Slot(time(9, 0), time(12, 0))
+        b = Slot(time(11, 0), time(18, 0))
+
+        self.service._compute_free_slots([a, b], [])
+
+        assert a.start == time(9, 0)
+        assert a.end == time(12, 0)
+        assert b.start == time(11, 0)
+        assert b.end == time(18, 0)
+
 
 class TestGetAvailability:
     async def test_success_with_room_id(self, service, mock_room_with_slots):
