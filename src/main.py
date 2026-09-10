@@ -13,6 +13,7 @@ from src.api import router as api_router
 from src.connectors.setup import redis_manager
 from src.connectors.redis.redis_backend import SafeRedisBackend
 from src.utils.cache import request_key_builder
+from src.middleware.disable_cache_control import CacheControlMiddleware
 
 
 @asynccontextmanager
@@ -35,6 +36,7 @@ app = FastAPI(
     title="Сервис бронирования переговорных комнат (API)",
     lifespan=lifespan,
 )
+app.add_middleware(CacheControlMiddleware)
 app.include_router(api_router, prefix="/api")
 
 
